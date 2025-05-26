@@ -2,9 +2,13 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false)
+  const pathname=usePathname()
 
   return (
     <div className="lg:hidden">
@@ -72,24 +76,28 @@ export function MobileNav() {
       </div>
 
       {isOpen && (
-        <div className="border-b border-blue-900/30 bg-zinc-950 animate-slide-in">
-          <nav className="py-4">
+        <div
+          className="fixed inset-0 z-30 border-b border-blue-900/30 bg-zinc-950 animate-slide-in lg:hidden"
+          style={{ top: "4rem" }} // Position below the header
+        >
+          <nav className="py-4 h-full">
             <div className="px-3 space-y-1">
               {[
-                { name: "Dashboard", icon: "layout-dashboard", active: true },
-                { name: "Conversations", icon: "message-square", active: false },
-                { name: "Templates", icon: "file-text", active: false },
-                { name: "Analytics", icon: "bar-chart", active: false },
-                { name: "Settings", icon: "settings", active: false },
+                { name: "Dashboard", icon: "layout-dashboard", href: "/", active: pathname === "/" },
+                { name: "Product Details", icon: "target", href: "/product-details", active: pathname === "/product-details" },
+                { name: "Coupons", icon: "percent-circle", href: "/coupons", active: pathname === "/coupons" },
+                { name: "Remarketing", icon: "users-round", href: "/remarketing", active: pathname === "/remarketing" },
+                { name: "Leads", icon: "puzzle", href: "/leads", active: pathname === "/leads" },
               ].map((item, index) => (
-                <a
+                <Link
                   key={item.name}
-                  href="#"
-                  className={`flex items-center gap-x-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200 animate-slide-in ${
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-x-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200 animate-slide-in",
                     item.active
                       ? "bg-blue-600/10 text-blue-500"
                       : "text-slate-400 hover:bg-blue-600/10 hover:text-blue-500"
-                  }`}
+                  )}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <svg
@@ -102,10 +110,12 @@ export function MobileNav() {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className={`flex-shrink-0 transition-colors ${
+                    className={cn(
+                      "flex-shrink-0 transition-colors",
                       item.active ? "text-blue-500" : "text-slate-400 group-hover:text-blue-500"
-                    }`}
+                    )}
                   >
+                    {/* Icon paths as before */}
                     {item.icon === "layout-dashboard" && (
                       <>
                         <rect width="7" height="9" x="3" y="3" rx="1" />
@@ -114,36 +124,10 @@ export function MobileNav() {
                         <rect width="7" height="5" x="3" y="16" rx="1" />
                       </>
                     )}
-                    {item.icon === "message-square" && (
-                      <>
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                      </>
-                    )}
-                    {item.icon === "file-text" && (
-                      <>
-                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <line x1="16" x2="8" y1="13" y2="13" />
-                        <line x1="16" x2="8" y1="17" y2="17" />
-                        <line x1="10" x2="8" y1="9" y2="9" />
-                      </>
-                    )}
-                    {item.icon === "bar-chart" && (
-                      <>
-                        <line x1="12" x2="12" y1="20" y2="10" />
-                        <line x1="18" x2="18" y1="20" y2="4" />
-                        <line x1="6" x2="6" y1="20" y2="16" />
-                      </>
-                    )}
-                    {item.icon === "settings" && (
-                      <>
-                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </>
-                    )}
+                    {/* Add other icons as needed, matching Sidebar icons */}
                   </svg>
                   <span>{item.name}</span>
-                </a>
+                </Link>
               ))}
             </div>
           </nav>

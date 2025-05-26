@@ -1,0 +1,75 @@
+"use client";
+
+import { useAuthStore } from "@/store/authStore";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import DashboardSkeleton from "@/components/global/Dashboard/Skeleton";
+import { toast } from "sonner";
+import { MobileNav } from "@/components/global/mobile-nav";
+import { Sidebar } from "@/components/global/sidebar";
+import ComingSoon from "@/components/global/ComingSoon"; // Import the new component
+import ComingSoonSkeleton from "@/components/ComingSoonSkeleton";
+
+export default function Remarketing() {
+  const router = useRouter();
+  const token = useAuthStore((state) => state.token);
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const handleSidebarToggle = (collapsed: boolean) => {
+    setSidebarCollapsed(collapsed);
+  };
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+
+    const fetchUser = async () => {
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/auth", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          toast.error("API Error");
+          console.error("API error:", res.status);
+          return;
+        }
+
+        const data = await res.json();
+        setUser(data.company);
+        setLoading(false);
+      } catch (err) {
+        toast.error("Network Error: " + err);
+        console.error("Network error:", err);
+        router.push("/login");
+      }
+    };
+
+    fetchUser();
+  }, [token, router, hasHydrated]);
+
+  if (!hasHydrated || loading) {
+    return <ComingSoonSkeleton  />;
+  }
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-slate-100 flex">
+      <Sidebar onToggle={handleSidebarToggle} />
+
+      <div
+        className="flex-1 flex flex-col transition-all duration-300"
+        style={{ marginLeft: sidebarCollapsed ? "4rem" : "16rem" }}
+      >
+        <MobileNav />
+        <ComingSoon />
+      </div>
+    </div>
+  );
+}

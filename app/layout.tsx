@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter, Montserrat, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
+import { Toaster } from "@/components/ui/sonner"
 
 // Load Inter font
 const inter = Inter({
@@ -39,7 +40,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} ${montserrat.variable} ${jetbrainsMono.variable}`}>{children}</body>
+      <body className={`${inter.variable} ${montserrat.variable} ${jetbrainsMono.variable}`} >{children}
+        <Toaster richColors />
+      </body>
     </html>
   )
 }

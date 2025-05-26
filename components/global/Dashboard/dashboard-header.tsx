@@ -1,11 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
-export function DashboardHeader() {
-  const [timeRange, setTimeRange] = useState("7d")
+export function DashboardHeader({ 
+  timeRange, 
+  setTimeRange, 
+  onRefresh 
+}: { 
+  timeRange: string, 
+  setTimeRange: (range: string) => void,
+  onRefresh: () => void 
+}) {
+  const router = useRouter();
 
   return (
     <header className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -62,7 +70,13 @@ export function DashboardHeader() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+        <Button 
+          onClick={() => {
+            router.refresh();
+            onRefresh();
+          }} 
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -84,5 +98,5 @@ export function DashboardHeader() {
         </Button>
       </div>
     </header>
-  )
+  );
 }
