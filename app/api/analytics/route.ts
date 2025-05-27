@@ -229,7 +229,7 @@ export async function GET(request: NextRequest) {
         weekEnd.setHours(23, 59, 59, 999);
 
         const weekMessages = await ChatHistory.find({
-          company_id: company._id,
+          company_instagram_id: company.company_instagram_id,
           createdAt: { $gte: weekStart, $lte: weekEnd },
         });
 
@@ -245,7 +245,7 @@ export async function GET(request: NextRequest) {
         const newUsers = new Set<string>();
         for (const userId of userIds) {
           const priorMessages = await ChatHistory.findOne({
-            company_id: company._id,
+            company_instagram_id: company.company_instagram_id,
             sender_id: userId,
             createdAt: { $lt: weekStart },
           });
@@ -302,7 +302,7 @@ export async function GET(request: NextRequest) {
     const newUsers = new Set<string>();
     for (const userId of userIdsInTimeframe) {
       const priorMessages = await ChatHistory.findOne({
-        company_id: company._id,
+        company_instagram_id: company.company_instagram_id,
         sender_id: userId,
         createdAt: { $lt: timeFilter.createdAt.$gte },
       });
