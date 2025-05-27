@@ -57,7 +57,6 @@ export async function GET(request: NextRequest) {
     if (timeRange === "24h") {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
       timeFilter = { createdAt: { $gte: since } };
-      // Generate 24 hourly buckets for activity, DAU, message volume, active conversations, response rate
       for (let i = 23; i >= 0; i--) {
         const hourStart = new Date(now);
         hourStart.setHours(now.getHours() - i, 0, 0, 0);
@@ -323,7 +322,7 @@ export async function GET(request: NextRequest) {
         recentActivity.push({
           id: message._id,
           type: isFromCompany ? "sent" : "received",
-          message: message.message,
+          message: message.text,
           timestamp: message.createdAt,
           userId: otherPartyId,
         });
@@ -332,7 +331,7 @@ export async function GET(request: NextRequest) {
       if (!conversations[otherPartyId]) {
         conversations[otherPartyId] = {
           userId: otherPartyId,
-          lastMessage: message.message,
+          lastMessage: message.text,
           lastTimestamp: message.createdAt,
           messageCount: 1,
           unreadCount: isFromCompany ? 0 : 1,
@@ -344,7 +343,7 @@ export async function GET(request: NextRequest) {
           new Date(message.createdAt) >
           new Date(conversations[otherPartyId].lastTimestamp)
         ) {
-          conversations[otherPartyId].lastMessage = message.message;
+          conversations[otherPartyId].lastMessage = message.text;
           conversations[otherPartyId].lastTimestamp = message.createdAt;
           if (!isFromCompany) {
             conversations[otherPartyId].unreadCount++;

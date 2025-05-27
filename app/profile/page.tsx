@@ -10,6 +10,7 @@ import { MobileNav } from '../../components/global/mobile-nav';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 
 interface FAQ {
   question: string;
@@ -35,23 +36,26 @@ export default function CompanyProfile() {
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
   const clearToken = useAuthStore((state) => state.clearToken);
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
 
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Handle sidebar toggle
   const handleSidebarToggle = (collapsed: boolean) => {
     setSidebarCollapsed(collapsed);
   };
 
   useEffect(() => {
+    if (!hasHydrated) return;
+
     const fetchCompany = async () => {
       if (!token) {
         router.push('/login');
         return;
       }
+
       try {
         const res = await fetch('/api/auth', {
           headers: { Authorization: `Bearer ${token}` },
@@ -61,7 +65,7 @@ export default function CompanyProfile() {
           const data = await res.json();
           setError(data.error || 'Failed to fetch profile');
           setLoading(false);
-          toast.error("Failed to fetch profile");
+          toast.error('Failed to fetch profile');
           router.push('/login');
           return;
         }
@@ -70,7 +74,7 @@ export default function CompanyProfile() {
         setCompany(data.company);
         setLoading(false);
       } catch (err) {
-        toast.error("Network Error " + err);
+        toast.error('Network Error: ' + err);
         console.error('Network error:', err);
         setError('Something went wrong');
         setLoading(false);
@@ -79,16 +83,17 @@ export default function CompanyProfile() {
     };
 
     fetchCompany();
-  }, [token, router]);
-
+  }, [token, router, hasHydrated]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 text-slate-100 flex">
-        <Sidebar  user={company} onToggle={handleSidebarToggle} />
+      <div className="min-h-screen bg-zinc-950 text-slate-100 flex overflow-x-hidden">
+        <Sidebar user={company} onToggle={handleSidebarToggle} />
         <div
-          className="flex-1 flex flex-col"
-          style={{ marginLeft: sidebarCollapsed ? '4rem' : '16rem' }}
+          className={cn(
+            'flex-1 flex flex-col transition-all duration-300',
+            sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+          )}
         >
           <MobileNav />
           <main className="flex-1 px-4 py-4 md:px-6 lg:px-8 max-w-7xl mx-auto w-full">
@@ -122,11 +127,13 @@ export default function CompanyProfile() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-zinc-950 text-slate-100 flex">
-        <Sidebar   user={company} onToggle={handleSidebarToggle} />
+      <div className="min-h-screen bg-zinc-950 text-slate-100 flex overflow-x-hidden">
+        <Sidebar user={company} onToggle={handleSidebarToggle} />
         <div
-          className="flex-1 flex flex-col"
-          style={{ marginLeft: sidebarCollapsed ? '4rem' : '16rem' }}
+          className={cn(
+            'flex-1 flex flex-col transition-all duration-300',
+            sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+          )}
         >
           <MobileNav />
           <main className="flex-1 px-4 py-4 md:px-6 lg:px-8 max-w-7xl mx-auto w-full">
@@ -142,11 +149,13 @@ export default function CompanyProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-slate-100 flex">
-      <Sidebar  user={company} onToggle={handleSidebarToggle} />
+    <div className="min-h-screen bg-zinc-950 text-slate-100 flex overflow-x-hidden">
+      <Sidebar user={company} onToggle={handleSidebarToggle} />
       <div
-        className="flex-1 flex flex-col transition-all duration-300"
-        style={{ marginLeft: sidebarCollapsed ? '4rem' : '16rem' }}
+        className={cn(
+          'flex-1 flex flex-col transition-all duration-300',
+          sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+        )}
       >
         <MobileNav />
         <main className="flex-1 px-4 py-4 md:px-6 lg:px-8 max-w-7xl mx-auto w-full">
@@ -156,13 +165,13 @@ export default function CompanyProfile() {
             transition={{ duration: 0.5 }}
             className="mt-6 space-y-6"
           >
-            <div className="w-full flex justify-between">
+            <div className="w-full flex justify-between md:flex-row flex-col gap-6">
               <h2 className="text-3xl font-display font-medium text-white tracking-tight">
                 Company Profile
               </h2>
               <div className="flex space-x-4 items-center">
                 <Button
-                  onClick={() => router.push("/settings")}
+                  onClick={() => router.push('/settings')}
                   variant="default"
                   className="text-white"
                 >
@@ -182,7 +191,7 @@ export default function CompanyProfile() {
                       Delete Company
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className='border-0 border-transparent'>
+                  <DialogContent className="border-0 border-transparent">
                     <DialogHeader>
                       <DialogTitle>Are you absolutely sure?</DialogTitle>
                       <DialogDescription>
@@ -208,43 +217,41 @@ export default function CompanyProfile() {
             >
               <h3 className="text-xl font-medium text-white mb-4">Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
                 <div>
                   <p className="text-sm text-slate-400">Phone</p>
-                  <p className="text-base text-white">{company?.phone || 'N/A'}</p>
+                  <p className="text-base text-white break-words">{company?.phone || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-400">Email</p>
-                  <p className="text-base text-white">{company?.email}</p>
+                  <p className="text-base text-white break-words">{company?.email}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-400">Instagram ID</p>
-                  <p className="text-base text-white">{company?.company_instagram_id}</p>
+                  <p className="text-base text-white break-words">{company?.company_instagram_id}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-400">Instagram Profile</p>
-                  <p className="text-base text-white">{company?.instagram_profile || 'N/A'}</p>
+                  <p className="text-base text-white break-words">{company?.instagram_profile || 'N/A'}</p>
                 </div>
-
                 <div>
                   <p className="text-sm text-slate-400">Name</p>
-                  <p className="text-base text-white">{company?.name}</p>
+                  <p className="text-base text-white break-words">{company?.name}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-400">Bot Identity</p>
-                  <p className="text-base text-white">{company?.bot_identity}</p>
+                  <p className="text-base text-white break-words">{company?.bot_identity}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-400">Role</p>
-                  <p className="text-base text-white">{company?.Role}</p>
+                  <p className="text-base text-white break-words">{company?.Role}</p>
                 </div>
                 <div className="md:col-span-2">
                   <p className="text-sm text-slate-400">Background Context</p>
-                  <p className="text-base text-white">{company?.Back_context}</p>
+                  <p className="text-base text-white break-words">{company?.Back_context}</p>
                 </div>
                 <div className="md:col-span-2">
                   <p className="text-sm text-slate-400">Conversation Flow</p>
-                  <p className="text-base text-white">{company?.Conversation_Flow}</p>
+                  <p className="text-base text-white break-words">{company?.Conversation_Flow}</p>
                 </div>
               </div>
             </motion.section>
@@ -264,8 +271,8 @@ export default function CompanyProfile() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
                     >
-                      <p className="text-base font-medium text-white">{faq.question}</p>
-                      <p className="text-sm text-slate-300">{faq.answer}</p>
+                      <p className="text-base font-medium text-white break-words">{faq.question}</p>
+                      <p className="text-sm text-slate-300 break-words">{faq.answer}</p>
                     </motion.div>
                   ))}
                 </div>

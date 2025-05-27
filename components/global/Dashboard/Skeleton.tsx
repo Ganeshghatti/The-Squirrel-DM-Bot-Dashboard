@@ -1,17 +1,28 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { Sidebar } from "@/components/global/sidebar";
+import { MobileNav } from "@/components/global/mobile-nav";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 export default function DashboardSkeleton() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  const handleSidebarToggle = (collapsed: boolean) => {
+    setSidebarCollapsed(collapsed);
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-slate-100 flex">
+      <Sidebar user={null} onToggle={handleSidebarToggle} />
       <div
-        className="flex-1 flex flex-col"
-        style={{ marginLeft: sidebarCollapsed ? "4rem" : "16rem" }} // 4rem = 64px (collapsed), 16rem = 256px (expanded)
+        className={cn(
+          "flex-1 flex flex-col transition-all duration-300",
+          sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+        )}
       >
+        <MobileNav />
         <main className="flex-1 px-4 py-4 md:px-6 lg:px-8 max-w-7xl mx-auto w-full">
           <div className="mt-6 space-y-6">
             {/* Header Skeleton */}

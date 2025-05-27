@@ -9,6 +9,7 @@ import { MobileNav } from "@/components/global/mobile-nav";
 import { Sidebar } from "@/components/global/sidebar";
 import ComingSoon from "@/components/global/ComingSoon"; // Import the new component
 import ComingSoonSkeleton from "@/components/ComingSoonSkeleton";
+import { cn } from "@/lib/utils";
 
 export default function Coupons() {
   const router = useRouter();
@@ -60,16 +61,19 @@ export default function Coupons() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-slate-100 flex">
-      <Sidebar user={user} onToggle={handleSidebarToggle} />
-
-      <div
-        className="flex-1 flex flex-col transition-all duration-300"
-        style={{ marginLeft: sidebarCollapsed ? "4rem" : "16rem" }}
-      >
-        <MobileNav />
-        <ComingSoon />
+      <div className="min-h-screen bg-zinc-950 text-slate-100 flex">
+        <Sidebar user={user} onToggle={handleSidebarToggle} />
+        <div
+          className={cn(
+            "flex-1 flex flex-col transition-all duration-300",
+            sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+          )}
+        >
+          <MobileNav />
+          <main className="flex-1 px-4 py-4 md:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+            <ComingSoon />
+          </main>
+        </div>
       </div>
-    </div>
   );
 }

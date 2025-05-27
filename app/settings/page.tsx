@@ -162,7 +162,7 @@ export default function UpdateCompanyPage() {
     <div className="min-h-screen bg-zinc-950 text-slate-100 flex items-center 
     justify-center px-4 py-8">
       <div className="w-full max-w-4xl bg-zinc-900/60 border border-blue-900/30 rounded-xl 
-      p-10 backdrop-blur-sm animate-fade-in">
+      p-4 md:p-10 backdrop-blur-sm animate-fade-in">
         <h2 className="text-3xl font-display font-medium text-white mb-8 tracking-tight">
           Update Company Profile
         </h2>

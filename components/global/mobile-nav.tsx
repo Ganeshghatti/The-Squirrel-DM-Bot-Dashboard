@@ -1,14 +1,15 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { LayoutDashboard, PercentCircle, Puzzle, Target, UsersRound } from "lucide-react";
 
 export function MobileNav() {
-  const [isOpen, setIsOpen] = useState(false)
-  const pathname=usePathname()
+  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <div className="lg:hidden">
@@ -78,7 +79,7 @@ export function MobileNav() {
       {isOpen && (
         <div
           className="fixed inset-0 z-30 border-b border-blue-900/30 bg-zinc-950 animate-slide-in lg:hidden"
-          style={{ top: "4rem" }} // Position below the header
+          style={{ top: "4rem" }}
         >
           <nav className="py-4 h-full">
             <div className="px-3 space-y-1">
@@ -115,16 +116,21 @@ export function MobileNav() {
                       item.active ? "text-blue-500" : "text-slate-400 group-hover:text-blue-500"
                     )}
                   >
-                    {/* Icon paths as before */}
                     {item.icon === "layout-dashboard" && (
-                      <>
-                        <rect width="7" height="9" x="3" y="3" rx="1" />
-                        <rect width="7" height="5" x="14" y="3" rx="1" />
-                        <rect width="7" height="9" x="14" y="12" rx="1" />
-                        <rect width="7" height="5" x="3" y="16" rx="1" />
-                      </>
+                      <LayoutDashboard size={18} />
                     )}
-                    {/* Add other icons as needed, matching Sidebar icons */}
+                    {item.icon === "target" && (
+                      <Target size={18} />
+                    )}
+                    {item.icon === "percent-circle" && (
+                      <PercentCircle size={18} />
+                    )}
+                    {item.icon === "users-round" && (
+                      <UsersRound size={18} />
+                    )}
+                    {item.icon === "puzzle" && (
+                      <Puzzle size={18} />
+                    )}
                   </svg>
                   <span>{item.name}</span>
                 </Link>
@@ -134,5 +140,5 @@ export function MobileNav() {
         </div>
       )}
     </div>
-  )
+  );
 }
