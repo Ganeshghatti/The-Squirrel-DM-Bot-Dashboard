@@ -54,6 +54,8 @@ export async function GET(request: NextRequest) {
     let responseRateTrend = [];
     const now = new Date();
 
+    console.log("Company Instagram Id ",company?.company_instagram_id)
+
     if (timeRange === "24h") {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
       timeFilter = { createdAt: { $gte: since } };
@@ -64,7 +66,7 @@ export async function GET(request: NextRequest) {
         hourEnd.setHours(hourStart.getHours() + 1, 0, 0, 0);
 
         const hourMessages = await ChatHistory.find({
-          company_id: company._id,
+          company_instagram_id: company.company_instagram_id,
           createdAt: { $gte: hourStart, $lt: hourEnd },
         });
 
@@ -82,7 +84,7 @@ export async function GET(request: NextRequest) {
         const newUsers = new Set<string>();
         for (const userId of userIds) {
           const priorMessages = await ChatHistory.findOne({
-            company_id: company._id,
+            company_instagram_id: company.company_instagram_id,
             sender_id: userId,
             createdAt: { $lt: hourStart },
           });
@@ -156,7 +158,7 @@ export async function GET(request: NextRequest) {
         dayEnd.setHours(23, 59, 59, 999);
 
         const dayMessages = await ChatHistory.find({
-          company_id: company._id,
+          company_instagram_id: company.company_instagram_id,
           createdAt: { $gte: dayStart, $lte: dayEnd },
         });
 
@@ -172,7 +174,7 @@ export async function GET(request: NextRequest) {
         const newUsers = new Set<string>();
         for (const userId of userIds) {
           const priorMessages = await ChatHistory.findOne({
-            company_id: company._id,
+            company_instagram_id: company.company_instagram_id,
             sender_id: userId,
             createdAt: { $lt: dayStart },
           });
@@ -287,7 +289,7 @@ export async function GET(request: NextRequest) {
 
     // New vs Returning Users (overall for the time range)
     const messagesInTimeframe = await ChatHistory.find({
-      company_id: company._id,
+      company_instagram_id: company?.company_instagram_id,
       createdAt: timeFilter.createdAt,
     });
 
@@ -316,7 +318,7 @@ export async function GET(request: NextRequest) {
 
     // Other analytics
     const messages = await ChatHistory.find({
-      company_id: company._id,
+      company_instagram_id: company.company_instagram_id,
       ...timeFilter,
     }).sort({ createdAt: -1 });
 
