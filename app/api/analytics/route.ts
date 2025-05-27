@@ -68,6 +68,8 @@ export async function GET(request: NextRequest) {
           createdAt: { $gte: hourStart, $lt: hourEnd },
         });
 
+        console.log("Hour Messages ", hourMessages);
+
         const userIds = new Set(
           hourMessages
             .filter(
@@ -89,10 +91,14 @@ export async function GET(request: NextRequest) {
           }
         }
 
+        console.log("New Users ", newUsers);
+
         // Calculate response rate for this hour
         const sentMessages = hourMessages.filter(
           (msg) => msg.sender_id.toString() === company._id.toString()
         ).length;
+        console.log("Sent Messages  ", sentMessages);
+
         const responseRate =
           hourMessages.length > 0
             ? ((sentMessages / hourMessages.length) * 100).toFixed(1)
@@ -127,11 +133,14 @@ export async function GET(request: NextRequest) {
           }),
           responseRate: responseRate,
         });
+        console.log("activity data   ", activityData);
+        console.log("dailyActiveUsers   ", dailyActiveUsers);
+        console.log("messageVolume Trend   ", messageVolumeTrend);
+        console.log("responseRate Trend   ", responseRateTrend);
       }
     } else if (timeRange === "7d") {
       const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       timeFilter = { createdAt: { $gte: since } };
-      // Generate 7 daily buckets for activity, DAU, message volume, active conversations, response rate
       for (let i = 6; i >= 0; i--) {
         const day = new Date(now);
         day.setDate(now.getDate() - i);
@@ -198,6 +207,13 @@ export async function GET(request: NextRequest) {
           time: dayStr,
           responseRate: responseRate,
         });
+
+        console.log("dayMessages   ", dayMessages);
+        console.log("response rate   ", responseRate);
+        console.log("activity data   ", activityData);
+        console.log("dailyActiveUsers   ", dailyActiveUsers);
+        console.log("messageVolume Trend   ", messageVolumeTrend);
+        console.log("responseRate Trend   ", responseRateTrend);
       }
     } else if (timeRange === "30d") {
       const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -263,6 +279,10 @@ export async function GET(request: NextRequest) {
           responseRate: responseRate,
         });
       }
+      console.log("activity data   ", activityData);
+      console.log("dailyActiveUsers   ", dailyActiveUsers);
+      console.log("messageVolume Trend   ", messageVolumeTrend);
+      console.log("responseRate Trend   ", responseRateTrend);
     }
 
     // New vs Returning Users (overall for the time range)
@@ -430,7 +450,6 @@ export async function GET(request: NextRequest) {
       peakUsersCount: peakUsers.users,
     };
 
-    // Average Messages per Conversation
     const avgMessagesPerConversation =
       uniqueUsersCount > 0
         ? (messageCount / uniqueUsersCount).toFixed(1)
@@ -438,6 +457,12 @@ export async function GET(request: NextRequest) {
 
     const responseRate =
       messageCount > 0 ? (responsesCount / messageCount) * 100 : 0;
+
+    console.log("peak Activity ", messageTypeBreakdown);
+    console.log("peak Activity ", peakMessage);
+    console.log("peak Activity ", peakActivity);
+    console.log("avgMessagesPerConversation ", avgMessagesPerConversation);
+    console.log("peakUsers ", peakUsers);
 
     return NextResponse.json(
       {
