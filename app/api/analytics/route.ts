@@ -3,487 +3,410 @@ import { Company } from "@/models/CompanySchema";
 import { ChatHistory } from "@/models/ChatHistorySchema";
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
+import { authenticateCompany } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
 
-    const { searchParams } = new URL(request.url);
-    const timeRange = searchParams.get("timeRange");
+    const authResult = await authenticateCompany(request);
 
-    // Validate timeRange
-    const validTimeRanges = ["24h", "7d", "30d"];
-    if (!timeRange || !validTimeRanges.includes(timeRange)) {
-      return NextResponse.json(
-        { error: "Invalid time range. Use 24h, 7d, or 30d.", success: false },
-        { status: 400 }
-      );
-    }
+    if (!authResult.success) return authResult.response;
 
-    // Authenticate and get company
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
+    const company = authResult.company;
 
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "your_jwt_secret"
-    ) as { companyId: string };
+    // Parse time range parameters
+    // const { searchParams } = new URL(request.url);
+    // const timeRange = searchParams.get("timeRange");
+    // const startDate = searchParams.get("startDate");
+    // const endDate = searchParams.get("endDate");
 
-    const company = await Company.findById(decoded.companyId).select(
-      "-password"
-    );
-    if (!company) {
-      return NextResponse.json(
-        { error: "Company not found", success: false },
-        { status: 404 }
-      );
-    }
+    // let timeFilter: any = {};
+    // const now = new Date();
+    // // Adjust for IST (UTC+5:30)
+    // const istOffset = 5.5 * 60 * 60 * 1000;
+    // const nowIST = new Date(now.getTime());
+    // let bucketType: "hour" | "day" | "week" = "day";
+    // let buckets: { time: string; count: number }[] = [];
 
-    let timeFilter: any = {};
-    let activityData = [];
-    let dailyActiveUsers = [];
-    let newVsReturningUsers = { newUsers: 0, returningUsers: 0 };
-    let messageVolumeTrend = [];
-    let activeConversations = [];
-    let responseRateTrend = [];
+    // Handle time range
+    // if (startDate && endDate) {
+    //   const start = new Date(startDate);
+    //   const end = new Date(endDate);
+    //   if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
+    //     return NextResponse.json(
+    //       { error: "Invalid startDate or endDate", success: false },
+    //       { status: 400 }
+    //     );
+    //   }
+    //   timeFilter = {
+    //     createdAt: {
+    //       $gte: new Date(start.getTime() - istOffset),
+    //       $lte: new Date(end.getTime() - istOffset),
+    //     },
+    //   };
+    //   const daysDiff =
+    //     (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+    //   bucketType = daysDiff <= 1 ? "hour" : daysDiff <= 7 ? "day" : "week";
+
+    //   if (bucketType === "hour") {
+    //     for (let i = 0; i <= Math.floor(daysDiff * 24); i++) {
+    //       const time = new Date(start.getTime() + i * 60 * 60 * 1000);
+    //       buckets.push({
+    //         time: time.toISOString().slice(0, 13) + ":00",
+    //         count: 0,
+    //       });
+    //     }
+    //   } else if (bucketType === "day") {
+    //     for (let i = 0; i <= daysDiff; i++) {
+    //       const time = new Date(start.getTime() + i * 24 * 60 * 60 * 1000);
+    //       buckets.push({
+    //         time: time.toISOString().slice(0, 10),
+    //         count: 0,
+    //       });
+    //     }
+    //   } else {
+    //     for (let i = 0; i <= Math.ceil(daysDiff / 7); i++) {
+    //       const time = new Date(start.getTime() + i * 7 * 24 * 60 * 60 * 1000);
+    //       buckets.push({
+    //         time: time.toISOString().slice(0, 10),
+    //         count: 0,
+    //       });
+    //     }
+    //   }
+    // } else {
+    //   let since: Date;
+    //   switch (timeRange) {
+    //     case "24h":
+    //       since = new Date(nowIST.getTime() - 24 * 60 * 60 * 1000);
+    //       timeFilter = {
+    //         createdAt: { $gte: new Date(since.getTime() - istOffset) },
+    //       };
+    //       bucketType = "hour";
+    //       for (let i = 0; i < 24; i++) {
+    //         const time = new Date(since.getTime() + i * 60 * 60 * 1000);
+    //         buckets.push({
+    //           time: time.toISOString().slice(0, 13) + ":00",
+    //           count: 0,
+    //         });
+    //       }
+    //       break;
+    //     case "30d":
+    //       since = new Date(nowIST.getTime() - 30 * 24 * 60 * 60 * 1000);
+    //       timeFilter = {
+    //         createdAt: { $gte: new Date(since.getTime() - istOffset) },
+    //       };
+    //       bucketType = "week";
+    //       for (let i = 0; i < 5; i++) {
+    //         const time = new Date(
+    //           since.getTime() + i * 7 * 24 * 60 * 60 * 1000
+    //         );
+    //         buckets.push({
+    //           time: time.toISOString().slice(0, 10),
+    //           count: 0,
+    //         });
+    //       }
+    //       break;
+    //     case "7d":
+    //     default:
+    //       since = new Date(nowIST.getTime() - 7 * 24 * 60 * 60 * 1000);
+    //       timeFilter = {
+    //         createdAt: { $gte: new Date(since.getTime() - istOffset) },
+    //       };
+    //       bucketType = "day";
+    //       for (let i = 0; i < 7; i++) {
+    //         const time = new Date(since.getTime() + i * 24 * 60 * 60 * 1000);
+    //         buckets.push({
+    //           time: time.toISOString().slice(0, 10),
+    //           count: 0,
+    //         });
+    //       }
+    //       break;
+    //   }
+    // }
+
+    // // Debugging: Log time filter
+    // console.log("Time Filter:", JSON.stringify(timeFilter, null, 2));
+    // console.log("Bucket Type:", bucketType);
+    // console.log("Buckets:", buckets);
+
+    // Test query to verify data
+    // const testData = await ChatHistory.find({
+    //   company_instagram_id: company.company_instagram_id,
+    //   ...timeFilter,
+    // }).limit(5);
+    // console.log("Test Data:", testData);
+
+    // 1. Total number of messages (no time filter)
     const now = new Date();
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    console.log("Company Instagram Id ",company?.company_instagram_id)
+    // 2. Aggregate messages from last 24 hours, excluding specific company_instagram_id
+    const hourlyCounts = await ChatHistory.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: twentyFourHoursAgo,
+            $lte: now,
+          },
+          company_instagram_id: { $ne: "YOUR_EXCLUDED_ID" }, // replace with actual ID
+        },
+      },
+      {
+        $group: {
+          _id: { hour: { $hour: "$createdAt" } },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { "_id.hour": 1 },
+      },
+    ]);
 
-    if (timeRange === "24h") {
-      const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      timeFilter = { createdAt: { $gte: since } };
-      for (let i = 23; i >= 0; i--) {
-        const hourStart = new Date(now);
-        hourStart.setHours(now.getHours() - i, 0, 0, 0);
-        const hourEnd = new Date(hourStart);
-        hourEnd.setHours(hourStart.getHours() + 1, 0, 0, 0);
+    console.log("history ", hourlyCounts);
 
-        const hourMessages = await ChatHistory.find({
-          company_instagram_id: company.company_instagram_id,
-          createdAt: { $gte: hourStart, $lt: hourEnd },
-        });
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-        console.log("Hour Messages ", hourMessages);
+    const weeklyCounts = await ChatHistory.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: oneWeekAgo,
+            $lte: now,
+          },
+          company_id: company.company_instagram_id,
+        },
+      },
+      {
+        $group: {
+          _id: { hour: { $hour: "$createdAt" } },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { "_id.hour": 1 },
+      },
+    ]);
+    console.log("weekly  ", weeklyCounts);
 
-        const userIds = new Set(
-          hourMessages
-            .filter(
-              (msg) => msg.sender_id.toString() !== company._id.toString()
-            )
-            .map((msg) => msg.sender_id.toString())
-        );
+    const chats = await ChatHistory.find({}, { createdAt: 1 }).lean();
+    console.log(chats.map((c) => c.createdAt));
 
-        // Calculate new users for this hour
-        const newUsers = new Set<string>();
-        for (const userId of userIds) {
-          const priorMessages = await ChatHistory.findOne({
-            company_instagram_id: company.company_instagram_id,
-            sender_id: userId,
-            createdAt: { $lt: hourStart },
-          });
-          if (!priorMessages) {
-            newUsers.add(userId);
-          }
-        }
-
-        console.log("New Users ", newUsers);
-
-        // Calculate response rate for this hour
-        const sentMessages = hourMessages.filter(
-          (msg) => msg.sender_id.toString() === company._id.toString()
-        ).length;
-        console.log("Sent Messages  ", sentMessages);
-
-        const responseRate =
-          hourMessages.length > 0
-            ? ((sentMessages / hourMessages.length) * 100).toFixed(1)
-            : "0.0";
-
-        activityData.push({
-          time: hourStart.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          count: hourMessages.length,
-        });
-        dailyActiveUsers.push({
-          time: hourStart.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          users: userIds.size,
-          newUsers: newUsers.size,
-        });
-        messageVolumeTrend.push({
-          time: hourStart.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          count: hourMessages.length,
-        });
-        responseRateTrend.push({
-          time: hourStart.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          responseRate: responseRate,
-        });
-        console.log("activity data   ", activityData);
-        console.log("dailyActiveUsers   ", dailyActiveUsers);
-        console.log("messageVolume Trend   ", messageVolumeTrend);
-        console.log("responseRate Trend   ", responseRateTrend);
-      }
-    } else if (timeRange === "7d") {
-      const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      timeFilter = { createdAt: { $gte: since } };
-      for (let i = 6; i >= 0; i--) {
-        const day = new Date(now);
-        day.setDate(now.getDate() - i);
-        const dayStr =
-          i === 0
-            ? "Today"
-            : i === 1
-            ? "Yesterday"
-            : day.toLocaleDateString("en-US", { weekday: "short" });
-        const dayStart = new Date(day);
-        dayStart.setHours(0, 0, 0, 0);
-        const dayEnd = new Date(day);
-        dayEnd.setHours(23, 59, 59, 999);
-
-        const dayMessages = await ChatHistory.find({
-          company_instagram_id: company.company_instagram_id,
-          createdAt: { $gte: dayStart, $lte: dayEnd },
-        });
-
-        const userIds = new Set(
-          dayMessages
-            .filter(
-              (msg) => msg.sender_id.toString() !== company._id.toString()
-            )
-            .map((msg) => msg.sender_id.toString())
-        );
-
-        // Calculate new users for this day
-        const newUsers = new Set<string>();
-        for (const userId of userIds) {
-          const priorMessages = await ChatHistory.findOne({
-            company_instagram_id: company.company_instagram_id,
-            sender_id: userId,
-            createdAt: { $lt: dayStart },
-          });
-          if (!priorMessages) {
-            newUsers.add(userId);
-          }
-        }
-
-        // Calculate response rate for this day
-        const sentMessages = dayMessages.filter(
-          (msg) => msg.sender_id.toString() === company._id.toString()
-        ).length;
-        const responseRate =
-          dayMessages.length > 0
-            ? ((sentMessages / dayMessages.length) * 100).toFixed(1)
-            : "0.0";
-
-        activityData.push({
-          time: dayStr,
-          count: dayMessages.length,
-        });
-        dailyActiveUsers.push({
-          time: dayStr,
-          users: userIds.size,
-          newUsers: newUsers.size,
-        });
-        messageVolumeTrend.push({
-          time: dayStr,
-          count: dayMessages.length,
-        });
-        responseRateTrend.push({
-          time: dayStr,
-          responseRate: responseRate,
-        });
-
-        console.log("dayMessages   ", dayMessages);
-        console.log("response rate   ", responseRate);
-        console.log("activity data   ", activityData);
-        console.log("dailyActiveUsers   ", dailyActiveUsers);
-        console.log("messageVolume Trend   ", messageVolumeTrend);
-        console.log("responseRate Trend   ", responseRateTrend);
-      }
-    } else if (timeRange === "30d") {
-      const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-      timeFilter = { createdAt: { $gte: since } };
-      // Generate 5 weekly buckets for activity, DAU, message volume, active conversations, response rate
-      for (let i = 4; i >= 0; i--) {
-        const weekStart = new Date(now);
-        weekStart.setDate(now.getDate() - (i + 1) * 6);
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-        weekEnd.setHours(23, 59, 59, 999);
-
-        const weekMessages = await ChatHistory.find({
-          company_instagram_id: company.company_instagram_id,
-          createdAt: { $gte: weekStart, $lte: weekEnd },
-        });
-
-        const userIds = new Set(
-          weekMessages
-            .filter(
-              (msg) => msg.sender_id.toString() !== company._id.toString()
-            )
-            .map((msg) => msg.sender_id.toString())
-        );
-
-        // Calculate new users for this week
-        const newUsers = new Set<string>();
-        for (const userId of userIds) {
-          const priorMessages = await ChatHistory.findOne({
-            company_instagram_id: company.company_instagram_id,
-            sender_id: userId,
-            createdAt: { $lt: weekStart },
-          });
-          if (!priorMessages) {
-            newUsers.add(userId);
-          }
-        }
-
-        // Calculate response rate for this week
-        const sentMessages = weekMessages.filter(
-          (msg) => msg.sender_id.toString() === company._id.toString()
-        ).length;
-        const responseRate =
-          weekMessages.length > 0
-            ? ((sentMessages / weekMessages.length) * 100).toFixed(1)
-            : "0.0";
-
-        activityData.push({
-          time: `Week ${5 - i}`,
-          count: weekMessages.length,
-        });
-        dailyActiveUsers.push({
-          time: `Week ${5 - i}`,
-          users: userIds.size,
-          newUsers: newUsers.size,
-        });
-        messageVolumeTrend.push({
-          time: `Week ${5 - i}`,
-          count: weekMessages.length,
-        });
-        responseRateTrend.push({
-          time: `Week ${5 - i}`,
-          responseRate: responseRate,
-        });
-      }
-      console.log("activity data   ", activityData);
-      console.log("dailyActiveUsers   ", dailyActiveUsers);
-      console.log("messageVolume Trend   ", messageVolumeTrend);
-      console.log("responseRate Trend   ", responseRateTrend);
-    }
-
-    // New vs Returning Users (overall for the time range)
-    const messagesInTimeframe = await ChatHistory.find({
-      company_instagram_id: company?.company_instagram_id,
-      createdAt: timeFilter.createdAt,
-    });
-
-    const userIdsInTimeframe = new Set(
-      messagesInTimeframe
-        .filter((msg) => msg.sender_id.toString() !== company._id.toString())
-        .map((msg) => msg.sender_id.toString())
-    );
-
-    const newUsers = new Set<string>();
-    for (const userId of userIdsInTimeframe) {
-      const priorMessages = await ChatHistory.findOne({
-        company_instagram_id: company.company_instagram_id,
-        sender_id: userId,
-        createdAt: { $lt: timeFilter.createdAt.$gte },
-      });
-      if (!priorMessages) {
-        newUsers.add(userId);
-      }
-    }
-
-    newVsReturningUsers = {
-      newUsers: newUsers.size,
-      returningUsers: userIdsInTimeframe.size - newUsers.size,
-    };
-
-    // Other analytics
-    const messages = await ChatHistory.find({
+    const totalMessages = await ChatHistory.countDocuments({
       company_instagram_id: company.company_instagram_id,
-      ...timeFilter,
-    }).sort({ createdAt: -1 });
-
-    const conversations: any = {};
-    const recentActivity: any[] = [];
-    let messageCount = 0;
-    let uniqueUsersCount = 0;
-    let responsesCount = 0;
-
-    messages.forEach((message) => {
-      messageCount++;
-      const isFromCompany =
-        message.sender_id.toString() === company._id.toString();
-      const otherPartyId = isFromCompany
-        ? message.recipient_id.toString()
-        : message.sender_id.toString();
-
-      if (isFromCompany) {
-        responsesCount++;
-      }
-
-      if (recentActivity.length < 10) {
-        recentActivity.push({
-          id: message._id,
-          type: isFromCompany ? "sent" : "received",
-          message: message.text,
-          timestamp: message.createdAt,
-          userId: otherPartyId,
-        });
-      }
-
-      if (!conversations[otherPartyId]) {
-        conversations[otherPartyId] = {
-          userId: otherPartyId,
-          lastMessage: message.text,
-          lastTimestamp: message.createdAt,
-          messageCount: 1,
-          unreadCount: isFromCompany ? 0 : 1,
-        };
-        uniqueUsersCount++;
-      } else {
-        conversations[otherPartyId].messageCount++;
-        if (
-          new Date(message.createdAt) >
-          new Date(conversations[otherPartyId].lastTimestamp)
-        ) {
-          conversations[otherPartyId].lastMessage = message.text;
-          conversations[otherPartyId].lastTimestamp = message.createdAt;
-          if (!isFromCompany) {
-            conversations[otherPartyId].unreadCount++;
-          }
-        }
-      }
     });
 
-    const conversationList = Object.values(conversations).sort(
-      (a: any, b: any) =>
-        new Date(b.lastTimestamp).getTime() -
-        new Date(a.lastTimestamp).getTime()
-    );
+    // 2. Number of unique users (no time filter)
+    const uniqueUsers = await ChatHistory.aggregate([
+      {
+        $match: {
+          company_instagram_id: company.company_instagram_id,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          senderIds: { $addToSet: "$sender_id" },
+          recipientIds: { $addToSet: "$recipient_id" },
+        },
+      },
+      {
+        $project: {
+          allUsers: { $setUnion: ["$senderIds", "$recipientIds"] },
+        },
+      },
+      {
+        $unwind: "$allUsers",
+      },
+      {
+        $group: {
+          _id: null,
+          uniqueUsersCount: { $sum: 1 },
+        },
+      },
+    ]);
 
-    // Active Conversations Over Time
-    activeConversations = activityData.map(({ time }) => {
-      const conversationsInBucket = conversationList.filter((conv: any) => {
-        const lastTimestamp = new Date(conv.lastTimestamp);
-        let bucketStart: Date;
-        let bucketEnd: Date;
+    const uniqueUsersCount =
+      uniqueUsers.length > 0 ? uniqueUsers[0].uniqueUsersCount : 0;
 
-        if (timeRange === "24h") {
-          bucketStart = new Date(now);
-          bucketStart.setHours(
-            parseInt(time.split(":")[0]) +
-              (time.includes("PM") && time.split(":")[0] !== "12" ? 12 : 0),
-            0,
-            0,
-            0
-          );
-          bucketEnd = new Date(bucketStart);
-          bucketEnd.setHours(bucketStart.getHours() + 1);
-        } else if (timeRange === "7d") {
-          bucketStart = new Date(now);
-          bucketStart.setDate(
-            now.getDate() -
-              (time === "Today"
-                ? 0
-                : time === "Yesterday"
-                ? 1
-                : parseInt(time.split(" ")[1]))
-          );
-          bucketStart.setHours(0, 0, 0, 0);
-          bucketEnd = new Date(bucketStart);
-          bucketEnd.setHours(23, 59, 59, 999);
-        } else {
-          bucketStart = new Date(now);
-          bucketStart.setDate(
-            now.getDate() - (5 - parseInt(time.split(" ")[1])) * 6
-          );
-          bucketEnd = new Date(bucketStart);
-          bucketEnd.setDate(bucketStart.getDate() + 6);
-          bucketEnd.setHours(23, 59, 59, 999);
-        }
+    // 3. Get 10 most recent messages (no time filter)
+    const recentMessages = await ChatHistory.find({
+      company_instagram_id: company.company_instagram_id,
+    })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .select("sender_id recipient_id createdAt");
 
-        return lastTimestamp >= bucketStart && lastTimestamp <= bucketEnd;
-      });
-      return { time, count: conversationsInBucket.length };
-    });
+    const recentActivity = recentMessages.map((message) => ({
+      id: message._id,
+      type:
+        message.sender_id.toString() === company._id.toString()
+          ? "sent"
+          : "received",
+      userId:
+        message.sender_id.toString() === company._id.toString()
+          ? message.recipient_id.toString()
+          : message.sender_id.toString(),
+      timestamp: message.createdAt,
+    }));
 
-    // Sent vs Received Messages (overall)
-    const messageTypeBreakdown = {
-      sent: messages.filter(
-        (msg) => msg.sender_id.toString() === company._id.toString()
-      ).length,
-      received: messages.filter(
-        (msg) => msg.sender_id.toString() !== company._id.toString()
-      ).length,
-    };
-
-    // Peak Activity
-    const peakMessage = messageVolumeTrend.reduce(
-      (max, item) => (item.count > max.count ? item : max),
-      messageVolumeTrend[0] || { time: "", count: 0 }
-    );
-    const peakUsers = dailyActiveUsers.reduce(
-      (max, item) => (item.users > max.users ? item : max),
-      dailyActiveUsers[0] || { time: "", users: 0 }
-    );
-    const peakActivity = {
-      peakMessageTime: peakMessage.time,
-      peakMessageCount: peakMessage.count,
-      peakUsersTime: peakUsers.time,
-      peakUsersCount: peakUsers.users,
-    };
-
-    const avgMessagesPerConversation =
+    // 4. Average messages per user (no time filter)
+    const avgMessagesPerUser =
       uniqueUsersCount > 0
-        ? (messageCount / uniqueUsersCount).toFixed(1)
+        ? (totalMessages / uniqueUsersCount).toFixed(1)
         : "0.0";
 
-    const responseRate =
-      messageCount > 0 ? (responsesCount / messageCount) * 100 : 0;
+    // 5. Sent vs Received messages breakdown (no time filter)
+    const messageTypeBreakdown = await ChatHistory.aggregate([
+      {
+        $match: {
+          company_instagram_id: company.company_instagram_id,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          sent: {
+            $sum: {
+              $cond: [{ $eq: ["$sender_id", company._id.toString()] }, 1, 0],
+            },
+          },
+          received: {
+            $sum: {
+              $cond: [{ $ne: ["$sender_id", company._id.toString()] }, 1, 0],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          sent: 1,
+          received: 1,
+        },
+      },
+    ]);
 
-    console.log("peak Activity ", messageTypeBreakdown);
-    console.log("peak Activity ", peakMessage);
-    console.log("peak Activity ", peakActivity);
-    console.log("avgMessagesPerConversation ", avgMessagesPerConversation);
-    console.log("peakUsers ", peakUsers);
+    const { sent = 0, received = 0 } =
+      messageTypeBreakdown.length > 0 ? messageTypeBreakdown[0] : {};
+
+    // 6. Message Volume Graph
+    // const messageVolumeData = await ChatHistory.aggregate([
+    //   {
+    //     $match: {
+    //       company_instagram_id: company.company_instagram_id,
+    //       ...timeFilter,
+    //     },
+    //   },
+    //   {
+    //     $group: {
+    //       _id: {
+    //         $dateTrunc: {
+    //           date: "$createdAt",
+    //           unit: bucketType,
+    //           binSize: 1,
+    //         },
+    //       },
+    //       count: { $sum: 1 },
+    //     },
+    //   },
+    //   {
+    //     $sort: { _id: 1 },
+    //   },
+    //   {
+    //     $project: {
+    //       time: {
+    //         $dateToString: {
+    //           format: bucketType === "hour" ? "%Y-%m-%d %H:00" : "%Y-%m-%d",
+    //           date: "$_id",
+    //           timezone: "Asia/Kolkata", // Ensure IST output
+    //         },
+    //       },
+    //       count: 1,
+    //       _id: 0,
+    //     },
+    //   },
+    // ]);
+
+    // console.log("Raw messageVolumeData:", messageVolumeData);
+
+    // Merge with buckets to ensure all time slots are represented
+    // const messageVolumeGraph = buckets.map((bucket) => {
+    //   const dataPoint = messageVolumeData.find((d) => d.time === bucket.time);
+    //   return { time: bucket.time, count: dataPoint ? dataPoint.count : 0 };
+    // });
+
+    // 7. Unique Users Graph
+    // const uniqueUsersData = await ChatHistory.aggregate([
+    //   {
+    //     $match: {
+    //       company_instagram_id: company.company_instagram_id,
+    //       ...timeFilter,
+    //     },
+    //   },
+    //   {
+    //     $group: {
+    //       _id: {
+    //         date: {
+    //           $dateTrunc: {
+    //             date: "$createdAt",
+    //             unit: bucketType,
+    //             binSize: 1,
+    //           },
+    //         },
+    //         user: {
+    //           $cond: [
+    //             { $eq: ["$sender_id", company._id.toString()] },
+    //             "$recipient_id",
+    //             "$sender_id",
+    //           ],
+    //         },
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $group: {
+    //       _id: "$_id.date",
+    //       users: { $addToSet: "$_id.user" },
+    //     },
+    //   },
+    //   {
+    //     $sort: { _id: 1 },
+    //   },
+    //   {
+    //     $project: {
+    //       time: {
+    //         $dateToString: {
+    //           format: bucketType === "hour" ? "%Y-%m-%d %H:00" : "%Y-%m-%d",
+    //           date: "$_id",
+    //           timezone: "Asia/Kolkata", // Ensure IST output
+    //         },
+    //       },
+    //       count: { $size: "$users" },
+    //       _id: 0,
+    //     },
+    //   },
+    // ]);
+
+    // console.log("Raw uniqueUsersData:", uniqueUsersData);
+
+    // // Merge with buckets to ensure all time slots are represented
+    // const uniqueUsersGraph = buckets.map((bucket) => {
+    //   const dataPoint = uniqueUsersData.find((d) => d.time === bucket.time);
+    //   return { time: bucket.time, count: dataPoint ? dataPoint.count : 0 };
+    // });
 
     return NextResponse.json(
       {
         success: true,
         analytics: {
-          totalMessages: messageCount,
+          totalMessages,
           uniqueUsers: uniqueUsersCount,
-          responseRate: responseRate.toFixed(1),
-          avgMessagesPerConversation,
-          conversations: conversationList,
           recentActivity,
-          activityData,
-          dailyActiveUsers,
-          newVsReturningUsers,
-          messageVolumeTrend,
-          activeConversations,
-          messageTypeBreakdown,
-          responseRateTrend,
-          peakActivity,
+          avgMessagesPerUser,
+          messageTypeBreakdown: { sent, received },
+          // messageVolumeGraph,
+          // uniqueUsersGraph,
         },
         company,
       },

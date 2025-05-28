@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import { Company } from "@/models/CompanySchema";
 import { ChatHistory } from "@/models/ChatHistorySchema";
+import { authenticateCompany } from "@/lib/auth";
 
 function slugify(text: string) {
   return text
@@ -14,8 +15,6 @@ function slugify(text: string) {
     .replace(/\s+/g, "-") // collapse whitespace and replace by -
     .replace(/-+/g, "-"); // collapse dashes
 }
-
-
 
 export async function POST(request: NextRequest) {
   try {
@@ -77,7 +76,7 @@ export async function POST(request: NextRequest) {
     await company.save();
 
     return NextResponse.json(
-      { message: "Company registered successfully", success: true,company },
+      { message: "Company registered successfully", success: true, company },
       { status: 201 }
     );
   } catch (error) {
@@ -93,11 +92,7 @@ export async function GET() {
   try {
     await connectDB();
 
-
-    const company = await Company.find().select(
-      "-password"
-    );
-
+    const company = await Company.find().select("-password");
 
     return NextResponse.json({ company, success: true }, { status: 200 });
   } catch (error) {
@@ -114,21 +109,12 @@ export async function PUT(request: NextRequest) {
     await connectDB();
     const body = await request.json();
 
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { error: "Authentication required", success: false },
-        { status: 401 }
-      );
-    }
+    const authResult = await authenticateCompany(request);
 
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "your_jwt_secret"
-    ) as { companyId: string };
+    if (!authResult.success) return authResult.response;
 
-    // Fields that can be updated
+    const company = authResult.company;
+
     const updateFields = {
       instagram_profile: body.instagram_profile,
       phone: body.phone,
@@ -140,21 +126,20 @@ export async function PUT(request: NextRequest) {
       Conversation_Flow: body.Conversation_Flow,
     };
 
-    const company = await Company.findByIdAndUpdate(
-      decoded.companyId,
+    const updatedCompany = await Company.findByIdAndUpdate(
+      company._id,
       { $set: updateFields },
       { new: true, runValidators: true }
     ).select("-password");
 
-    if (!company) {
-      return NextResponse.json(
-        { error: "Company not found", success: false },
-        { status: 404 }
-      );
-    }
+    // Fields that can be updated
 
     return NextResponse.json(
-      { message: "Profile updated successfully", company, success: true },
+      {
+        message: "Profile updated successfully",
+        updatedCompany,
+        success: true,
+      },
       { status: 200 }
     );
   } catch (error) {
@@ -170,34 +155,18 @@ export async function DELETE(request: NextRequest) {
   try {
     await connectDB();
 
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { error: "Authentication required", success: false },
-        { status: 401 }
-      );
-    }
+    const authResult = await authenticateCompany(request);
 
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "your_jwt_secret"
-    ) as { companyId: string };
+    if (!authResult.success) return authResult.response;
 
-    const company = await Company.findById(decoded.companyId);
-
-    if (!company) {
-      return NextResponse.json(
-        { error: "Company not found", success: false },
-        { status: 404 }
-      );
-    }
+    const company = authResult.company;
 
     // Delete the company
-    await Company.findByIdAndDelete(decoded.companyId);
+    await Company.findByIdAndDelete(company._id);
 
-    // Delete all chat history records associated with the company
-    await ChatHistory.deleteMany({ company_id: decoded.companyId });
+    await ChatHistory.deleteMany({
+      company_instagram_id: company.company_instagram_id,
+    });
 
     return NextResponse.json(
       {

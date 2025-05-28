@@ -1,17 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { TimeRange } from "./TimeRange";
 
 export function DashboardHeader({ 
-  timeRange, 
-  setTimeRange, 
-  onRefresh 
+  onRefresh,
+  timeRange,
+  onTimeRangeChange
 }: { 
-  timeRange: string, 
-  setTimeRange: (range: string) => void,
-  onRefresh: () => void 
+  onRefresh: () => void;
+  timeRange: string;
+  onTimeRangeChange: (range: string) => void;
 }) {
   const router = useRouter();
 
@@ -24,52 +24,10 @@ export function DashboardHeader({
         <p className="mt-1 text-sm text-slate-400 font-body">Monitor and manage your Instagram DM automation</p>
       </div>
       <div className="flex items-center space-x-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="border-blue-900/30 bg-blue-950/30 text-slate-300 hover:bg-blue-900/20 hover:text-white"
-            >
-              {timeRange === "24h" && "Last 24 Hours"}
-              {timeRange === "7d" && "Last 7 Days"}
-              {timeRange === "30d" && "Last 30 Days"}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="ml-2"
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="bg-zinc-900 border-blue-900/30 text-slate-300">
-            <DropdownMenuItem
-              className="hover:bg-blue-900/20 hover:text-white focus:bg-blue-900/20 focus:text-white cursor-pointer"
-              onClick={() => setTimeRange("24h")}
-            >
-              Last 24 Hours
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="hover:bg-blue-900/20 hover:text-white focus:bg-blue-900/20 focus:text-white cursor-pointer"
-              onClick={() => setTimeRange("7d")}
-            >
-              Last 7 Days
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="hover:bg-blue-900/20 hover:text-white focus:bg-blue-900/20 focus:text-white cursor-pointer"
-              onClick={() => setTimeRange("30d")}
-            >
-              Last 30 Days
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <TimeRange 
+          selectedRange={timeRange}
+          onRangeChange={onTimeRangeChange}
+        />
         <Button 
           onClick={() => {
             router.refresh();

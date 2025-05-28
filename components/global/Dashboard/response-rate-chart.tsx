@@ -1,5 +1,4 @@
-import { useAuthStore } from '@/store/authStore';
-import { useEffect, useState } from 'react';
+
 import {
     LineChart,
     Line,
@@ -10,49 +9,11 @@ import {
     ResponsiveContainer
 } from 'recharts';
 
-export default function ResponseRateChart({ timeRange, refreshKey }: { timeRange: string,refreshKey:number }) {
-    const [chartData, setChartData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const token = useAuthStore((state) => state.token);
+export default function ResponseRateChart({ loading, chartData }: {
+    loading: boolean,
+    chartData: []
+}) {
 
-    useEffect(() => {
-        setChartData([]);
-        setLoading(true);
-        setError(null);
-
-        const fetchResponseRate = async () => {
-            try {
-                const res = await fetch(`/api/analytics?timeRange=${timeRange}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-
-                if (!res.ok) {
-                    console.error("Analytics API error:", res.status);
-                    return;
-                }
-
-                const data = await res.json();
-                if (data.success && data.analytics) {
-                    // Convert responseRate to numbers for proper rendering
-                    const formattedData = data.analytics.responseRateTrend.map((item: any) => ({
-                        ...item,
-                        responseRate: parseFloat(item.responseRate)
-                    }));
-                    setChartData(formattedData);
-                } else {
-                    throw new Error('Invalid data format');
-                }
-            } catch (err: any) {
-                console.error("Fetch error:", err);
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchResponseRate();
-    }, [timeRange, refreshKey]);
 
     if (loading) {
         return (
@@ -62,13 +23,6 @@ export default function ResponseRateChart({ timeRange, refreshKey }: { timeRange
         );
     }
 
-    if (error) {
-        return (
-            <div className="h-80 flex items-center justify-center text-red-400">
-                Error: {error}
-            </div>
-        );
-    }
 
     if (chartData.length === 0) {
         return (

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import { Company } from "@/models/CompanySchema";
+import { authenticateCompany } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
 
     if (!email || !password) {
       return NextResponse.json(
-        { error: "Email and password are required",success:false },
+        { error: "Email and password are required", success: false },
         { status: 400 }
       );
     }
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     const company = await Company.findOne({ email });
     if (!company) {
       return NextResponse.json(
-        { error: "Invalid credentials",success:false  },
+        { error: "Invalid credentials", success: false },
         { status: 401 }
       );
     }
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
     const isMatch = await bcrypt.compare(password, company.password);
     if (!isMatch) {
       return NextResponse.json(
-        { error: "Invalid credentials",success:false },
+        { error: "Invalid credentials", success: false },
         { status: 401 }
       );
     }
@@ -40,13 +41,13 @@ export async function POST(request: NextRequest) {
     );
 
     return NextResponse.json(
-      { message: "Login successful", token,success:true },
+      { message: "Login successful", token, success: true },
       { status: 200 }
     );
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(
-      { error: "Internal server error",success:false },
+      { error: "Internal server error", success: false },
       { status: 500 }
     );
   }
@@ -56,30 +57,11 @@ export async function GET(request: NextRequest) {
   try {
     await connectDB();
 
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
+    const authResult = await authenticateCompany(request);
 
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "your_jwt_secret"
-    ) as { companyId: string };
+    if (!authResult.success) return authResult.response;
 
-    const company = await Company.findById(decoded.companyId).select(
-      "-password"
-    );
-
-    if (!company) {
-      return NextResponse.json(
-        { error: "Company not found", success: false },
-        { status: 404 }
-      );
-    }
+    const company = authResult.company;
 
     return NextResponse.json({ company, success: true }, { status: 200 });
   } catch (error) {
