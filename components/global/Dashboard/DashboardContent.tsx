@@ -3,15 +3,14 @@ import { KpiCards } from "./kpi-cards";
 import { ActivityLog } from "./activity-log";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "sonner";
-import { filterDataByTimeRange } from "@/lib/timeRangeUtils";
+// import { filterDataByTimeRange } from "@/lib/timeRangeUtils";
+// import { hasCustomGetInitialProps } from "next/dist/build/utils";
 
 const DashboardContent = ({
     refreshKey,
-    user,
     timeRange
 }: {
     refreshKey: number;
-    user: any,
     timeRange: string
 }) => {
     const [selectedKpi, setSelectedKpi] = useState<"Users" | "Messages" | null>(
@@ -21,9 +20,9 @@ const DashboardContent = ({
     const token = useAuthStore((state) => state.token);
     const hasHydrated = useAuthStore((state) => state.hasHydrated);
     const [loading, setLoading] = useState(false);
-    const filteredRecentActivity = dashboardData?.recentActivity
-        ? filterDataByTimeRange(dashboardData.recentActivity, timeRange, 'createdAt')
-        : [];
+    // const filteredRecentActivity = dashboardData?.recentActivity
+    //     ? filterDataByTimeRange(dashboardData.recentActivity, timeRange, 'createdAt')
+    //     : [];
 
     const handleKpiClick = (category: "Users" | "Messages" | null) => {
         setSelectedKpi(category); // Update selected KPI category
@@ -63,7 +62,7 @@ const DashboardContent = ({
         if (token) {
             fetchAnalytics();
         }
-    }, [token, refreshKey, timeRange]);
+    }, [token, refreshKey, timeRange,hasHydrated]);
     if (loading) {
         return <p>Please Wait</p>;
     }
@@ -147,7 +146,7 @@ const DashboardContent = ({
                 </h2>
                 <div className="bg-zinc-900/60 border border-blue-900/30 rounded-xl p-5 backdrop-blur-sm">
                     <ActivityLog activities={dashboardData?.recentActivity}
-                        loading={loading} companyId={user && user?.company_id} />
+                        loading={loading} />
                 </div>
             </section>
         </div>

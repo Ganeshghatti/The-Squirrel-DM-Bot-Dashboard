@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { Chart, registerables } from "chart.js"
+import { Chart, ChartOptions, registerables } from "chart.js"
 
 Chart.register(...registerables)
 
@@ -25,11 +25,11 @@ export function AnalyticsChart({ type }: AnalyticsChartProps) {
     if (!ctx) return
 
     // Common options
-    const options = {
+    const options: ChartOptions<"line" | "bar"> = {
       responsive: true,
       maintainAspectRatio: false,
       interaction: {
-        mode: "index" as const,
+        mode: "index",
         intersect: false,
       },
       animation: {
@@ -59,14 +59,11 @@ export function AnalyticsChart({ type }: AnalyticsChartProps) {
           callbacks: {
             label: (context: any) => {
               let label = context.dataset.label || ""
-              if (label) {
-                label += ": "
-              }
+              if (label) label += ": "
               if (context.parsed.y !== null) {
-                label +=
-                  type === "line"
-                    ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(context.parsed.y)
-                    : new Intl.NumberFormat("en-US").format(context.parsed.y)
+                label += type === "line"
+                  ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(context.parsed.y)
+                  : new Intl.NumberFormat("en-US").format(context.parsed.y)
               }
               return label
             },
@@ -77,7 +74,6 @@ export function AnalyticsChart({ type }: AnalyticsChartProps) {
         x: {
           grid: {
             display: false,
-            drawBorder: false,
           },
           ticks: {
             color: "rgba(191, 219, 254, 0.7)",
@@ -90,7 +86,6 @@ export function AnalyticsChart({ type }: AnalyticsChartProps) {
         y: {
           grid: {
             color: "rgba(30, 58, 138, 0.2)",
-            drawBorder: false,
             lineWidth: 0.5,
           },
           ticks: {
@@ -108,6 +103,7 @@ export function AnalyticsChart({ type }: AnalyticsChartProps) {
       },
     }
 
+
     // Data
     const labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     const data = {
@@ -115,33 +111,33 @@ export function AnalyticsChart({ type }: AnalyticsChartProps) {
       datasets:
         type === "line"
           ? [
-              {
-                label: "Revenue",
-                data: [12000, 19000, 13000, 15000, 22000, 30000, 42000, 33000, 34000, 52000, 49000, 62000],
-                borderColor: "rgba(59, 130, 246, 1)",
-                backgroundColor: "rgba(59, 130, 246, 0.1)",
-                tension: 0.4,
-                fill: true,
-                pointRadius: 0,
-                pointHoverRadius: 6,
-                pointBackgroundColor: "rgba(59, 130, 246, 1)",
-                pointHoverBorderColor: "rgba(255, 255, 255, 1)",
-                pointHoverBorderWidth: 2,
-                borderWidth: 3,
-              },
-            ]
+            {
+              label: "Revenue",
+              data: [12000, 19000, 13000, 15000, 22000, 30000, 42000, 33000, 34000, 52000, 49000, 62000],
+              borderColor: "rgba(59, 130, 246, 1)",
+              backgroundColor: "rgba(59, 130, 246, 0.1)",
+              tension: 0.4,
+              fill: true,
+              pointRadius: 0,
+              pointHoverRadius: 6,
+              pointBackgroundColor: "rgba(59, 130, 246, 1)",
+              pointHoverBorderColor: "rgba(255, 255, 255, 1)",
+              pointHoverBorderWidth: 2,
+              borderWidth: 3,
+            },
+          ]
           : [
-              {
-                label: "Users",
-                data: [1200, 1900, 1300, 1500, 2200, 3000, 4200, 3300, 3400, 5200, 4900, 6200],
-                backgroundColor: "rgba(59, 130, 246, 0.7)",
-                hoverBackgroundColor: "rgba(59, 130, 246, 0.9)",
-                borderRadius: 6,
-                borderSkipped: false,
-                barPercentage: 0.6,
-                categoryPercentage: 0.7,
-              },
-            ],
+            {
+              label: "Users",
+              data: [1200, 1900, 1300, 1500, 2200, 3000, 4200, 3300, 3400, 5200, 4900, 6200],
+              backgroundColor: "rgba(59, 130, 246, 0.7)",
+              hoverBackgroundColor: "rgba(59, 130, 246, 0.9)",
+              borderRadius: 6,
+              borderSkipped: false,
+              barPercentage: 0.6,
+              categoryPercentage: 0.7,
+            },
+          ],
     }
 
     // Create new chart

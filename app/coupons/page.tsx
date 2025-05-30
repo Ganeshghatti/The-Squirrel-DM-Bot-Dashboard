@@ -3,7 +3,6 @@
 import { useAuthStore } from "@/store/authStore";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import DashboardSkeleton from "@/components/global/Dashboard/Skeleton";
 import { toast } from "sonner";
 import { MobileNav } from "@/components/global/mobile-nav";
 import { Sidebar } from "@/components/global/sidebar";

@@ -3,11 +3,9 @@ import { MessageSquare, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 export function ActivityLog({
   activities,
   loading,
-  companyId,
 }: {
   activities: any[];
   loading: boolean;
-  companyId: string;
 }) {
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -20,10 +18,7 @@ export function ActivityLog({
     });
   };
 
-  const truncateMessage = (message: string, maxLength = 80) => {
-    if (!message || message.length <= maxLength) return message;
-    return message.substring(0, maxLength) + '...';
-  };
+
 
   if (loading) {
     return (

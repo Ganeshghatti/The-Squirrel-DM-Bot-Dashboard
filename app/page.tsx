@@ -91,7 +91,6 @@ export default function Dashboard() {
             onTimeRangeChange={handleTimeRangeChange}
           />
           <DashboardContent 
-            user={user} 
             refreshKey={refreshKey}
             timeRange={timeRange}
           />

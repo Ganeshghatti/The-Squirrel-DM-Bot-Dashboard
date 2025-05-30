@@ -38,6 +38,8 @@ export default function UpdateCompanyPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const token = useAuthStore((state) => state.token);
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
+
 
   const {
     register,
@@ -58,6 +60,9 @@ export default function UpdateCompanyPage() {
   });
 
   useEffect(() => {
+    if (!hasHydrated) {
+      return
+    }
     const fetchCompanyData = async (token: string) => {
       try {
         console.log("token ", token);
@@ -82,8 +87,9 @@ export default function UpdateCompanyPage() {
           FAQ: response.company.FAQ?.length ? response.company.FAQ : [{ question: '', answer: '' }],
         });
         setLoading(false);
-      } catch (err) {
-        setError('Something went wrong while fetching company data');
+      } catch (err: any) {
+        toast.error("Something went wrong " + err)
+        setError('Something went wrong while fetching company data ' + err);
         setLoading(false);
       }
     };
@@ -94,6 +100,9 @@ export default function UpdateCompanyPage() {
   }, [reset, token]);
 
   const onSubmit = async (data: UpdateCompanyForm) => {
+    if (!hasHydrated) {
+      return
+    }
     setError('');
     setLoading(true);
 

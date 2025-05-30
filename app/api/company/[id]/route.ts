@@ -3,7 +3,14 @@ import { Types } from 'mongoose';
 import { connectDB } from '@/lib/db';
 import { Company } from '@/models/CompanySchema';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+// Explicitly define the params type
+interface RouteParams {
+  params: {
+    id: string;
+  };
+}
+
+export async function GET(req: NextRequest, { params }: RouteParams) {
   await connectDB();
 
   const { id } = params;

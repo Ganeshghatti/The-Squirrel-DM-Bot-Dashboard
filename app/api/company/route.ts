@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import { Company } from "@/models/CompanySchema";
@@ -41,7 +40,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    let baseSlug = slugify(body.name);
+    const baseSlug = slugify(body.name);
     let slug = baseSlug;
     let counter = 1;
 

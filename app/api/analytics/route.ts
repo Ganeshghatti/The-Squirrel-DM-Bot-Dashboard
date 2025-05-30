@@ -1,7 +1,5 @@
 import { connectDB } from "@/lib/db";
-import { Company } from "@/models/CompanySchema";
 import { ChatHistory } from "@/models/ChatHistorySchema";
-import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateCompany } from "@/lib/auth";
 

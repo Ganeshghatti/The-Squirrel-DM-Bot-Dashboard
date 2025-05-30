@@ -9,7 +9,6 @@ import { Sidebar } from '../../components/global/sidebar';
 import { MobileNav } from '../../components/global/mobile-nav';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 interface FAQ {

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -64,9 +63,9 @@ export default function Login() {
       toast.success("Login Successfull")
       setToken(response.token);
       router.push('/');
-    } catch (err) {
-      toast.error("Something Went Wrong")
-      setError('Something went wrong');
+    } catch (err:any) {
+      toast.error("Something Went Wrong " + err)
+      setError('Something went wrong '+ err);
       setLoading(false);
     }
   };
