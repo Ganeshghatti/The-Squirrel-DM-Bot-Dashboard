@@ -3,17 +3,11 @@ import { Types } from 'mongoose';
 import { connectDB } from '@/lib/db';
 import { Company } from '@/models/CompanySchema';
 
-// Explicitly define the params type
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(req: NextRequest, { params }: RouteParams) {
+// Use Next.js's built-in type for dynamic route parameters
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   await connectDB();
 
-  const { id } = params;
+  const  {id}  = await params;
 
   if (!Types.ObjectId.isValid(id)) {
     return NextResponse.json({ error: 'Invalid company ID' }, { status: 400 });

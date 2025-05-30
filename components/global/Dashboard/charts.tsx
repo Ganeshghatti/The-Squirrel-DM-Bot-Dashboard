@@ -55,7 +55,6 @@ export function LineChart() {
           x: {
             grid: {
               display: false,
-              drawBorder: false,
             },
             ticks: {
               color: "rgba(148, 163, 184, 0.7)",
@@ -64,7 +63,6 @@ export function LineChart() {
           y: {
             grid: {
               color: "rgba(51, 65, 85, 0.3)",
-              drawBorder: false,
             },
             ticks: {
               color: "rgba(148, 163, 184, 0.7)",
@@ -137,7 +135,6 @@ export function BarChart() {
           x: {
             grid: {
               display: false,
-              drawBorder: false,
             },
             ticks: {
               color: "rgba(148, 163, 184, 0.7)",
@@ -146,7 +143,6 @@ export function BarChart() {
           y: {
             grid: {
               color: "rgba(51, 65, 85, 0.3)",
-              drawBorder: false,
             },
             ticks: {
               color: "rgba(148, 163, 184, 0.7)",
