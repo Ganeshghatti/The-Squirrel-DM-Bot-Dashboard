@@ -22,6 +22,7 @@ const CompanySchema = new mongoose.Schema(
         answer: { type: String, required: true },
       },
     ],
+    keywords: {type:[String]},
     bot_identity: { type: String, required: true },
     Back_context: { type: String, required: true },
     Role: { type: String, required: true },
