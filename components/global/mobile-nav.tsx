@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, PercentCircle, Puzzle, Target, UsersRound } from "lucide-react";
+import Image from "next/image";
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,21 +16,16 @@ export function MobileNav() {
     <div className="lg:hidden">
       <div className="flex h-16 items-center justify-between border-b border-blue-900/30 bg-zinc-950 px-4">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 text-white">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"></path>
-            </svg>
-          </div>
+          <div className="flex h-12 w-10 items-center justify-center rounded-md bg-transparent text-white">
+                      <Image
+                          src={"/images/logo.png"}
+                          quality={100}
+                          width={48}
+                          height={48}
+                          alt="Logo"
+                          className="h-8 w-10 sm:h-10 sm:w-12"  
+                        />
+                    </div>
           <span className="text-lg font-semibold text-white">InstaBot</span>
         </div>
         <Button

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 
 // Lucide icons
 import { LayoutDashboard, PercentCircle, Puzzle, Target, UsersRound } from "lucide-react";
+import Image from "next/image";
 
 export function Sidebar({ user, onToggle }: { user: any; onToggle: (collapsed: boolean) => void }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -38,8 +39,15 @@ export function Sidebar({ user, onToggle }: { user: any; onToggle: (collapsed: b
       <div className="flex h-16 items-center border-b border-blue-900/30 px-4">
       <Link href={"/"}>
         <div className="flex items-center gap-2 overflow-hidden">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 text-white">
-            <LayoutDashboard size={18} />
+          <div className="flex h-12 w-10 items-center justify-center rounded-md bg-transparent text-white">
+            <Image
+                src={"/images/logo.png"}
+                quality={100}
+                width={48}
+                height={48}
+                alt="Logo"
+                className="h-8 w-10 sm:h-10 sm:w-12"  
+              />
           </div>
           <span
             className={cn(
