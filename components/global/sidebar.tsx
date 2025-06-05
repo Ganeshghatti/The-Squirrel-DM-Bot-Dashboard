@@ -36,10 +36,10 @@ export function Sidebar({ user, onToggle }: { user: any; onToggle: (collapsed: b
       )}
     >
       {/* Header */}
-      <div className="flex h-16 items-center border-b border-blue-900/30 px-4">
+      <div className="flex h-16 items-center border-b border-blue-900/30  pr-4 pl-3 ">
       <Link href={"/"}>
         <div className="flex items-center gap-2 overflow-hidden">
-          <div className="flex h-12 w-10 items-center justify-center rounded-md bg-transparent text-white">
+          <div className="flex h-12 w-12 items-center justify-center rounded-md bg-transparent text-white">
             <Image
                 src={"/images/logo.png"}
                 quality={100}
