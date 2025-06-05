@@ -29,6 +29,7 @@ interface Company {
   Role: string;
   Conversation_Flow: string;
   FAQ: FAQ[];
+  keywords: string[];
 }
 
 export default function CompanyProfile() {
@@ -239,6 +240,10 @@ export default function CompanyProfile() {
                 <div>
                   <p className="text-sm text-slate-400">Bot Identity</p>
                   <p className="text-base text-white break-words">{company?.bot_identity}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-400">Keywords</p>
+                  <p className="text-base text-white break-words">{company?.keywords.join(', ')}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-400">Role</p>

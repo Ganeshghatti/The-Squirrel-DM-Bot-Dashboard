@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address').min(1, 'Email is required'),
@@ -26,6 +27,7 @@ export default function Login() {
   const setToken = useAuthStore((state) => state.setToken);
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const token = useAuthStore((state) => state.token);
+  const [showSignupNotice, setShowSignupNotice] = useState(true);
 
   const {
     register,
@@ -97,7 +99,32 @@ export default function Login() {
 
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-slate-100 flex items-center justify-center px-4 py-8">
+    <div className={`$ min-h-screen bg-zinc-950 text-slate-100 flex items-center justify-center px-4 py-8`}>
+      {showSignupNotice && (
+  <div className={`fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center px-4 ${showSignupNotice ? 'block backdrop-blur-sm' : 'hidden'}`}>
+    <div className="bg-zinc-900 border border-blue-900/30 rounded-xl p-6 max-w-md text-center space-y-4 shadow-lg">
+      <h3 className="text-xl font-semibold text-white">Sign-Up Unavailable</h3>
+      <p className="text-sm text-slate-300">
+        We're currently fixing an issue with the sign-up process. Meanwhile, if you'd like to try our product, please feel free to reach out to us.
+      </p>
+      <div className="flex justify-center gap-4">
+        <Link
+          href="https://smartinsta.thesquirrel.tech/#contact"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-md"
+        >
+          Contact Us
+        </Link>
+        <button
+          onClick={() => setShowSignupNotice(false)}
+          className="bg-zinc-700 hover:bg-zinc-600 text-white font-medium px-4 py-2 rounded-md"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       <div className="w-full max-w-3xl bg-zinc-900/60 border border-blue-900/30 rounded-xl p-10 backdrop-blur-sm animate-fade-in">
         <h2 className="text-3xl font-display font-medium text-white mb-8 tracking-tight">
           Login to Your Account

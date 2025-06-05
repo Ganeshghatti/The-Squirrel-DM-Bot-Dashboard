@@ -29,6 +29,7 @@ const UpdateCompanySchema = z.object({
       answer: z.string().min(1, 'Answer is required').max(1000, 'Answer must be 1000 characters or less'),
     })
   ).optional(),
+  keywords: z.array(z.string()).optional(),
 });
 
 type UpdateCompanyForm = z.infer<typeof UpdateCompanySchema>;
