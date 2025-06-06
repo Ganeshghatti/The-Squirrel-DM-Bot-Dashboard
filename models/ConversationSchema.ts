@@ -9,6 +9,16 @@ const ConversationSchema = new mongoose.Schema(
     isConversationActive: {
       type: Boolean,
     },
+    participants: {
+  type: [String],
+  required: true,
+  validate: {
+    validator: function (arr: string[]) {
+      return arr.length === 2;
+    },
+    message: 'Participants array must contain exactly 2 user IDs.',
+  },
+},
     messages: [],
   },
   {
