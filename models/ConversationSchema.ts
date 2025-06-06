@@ -8,6 +8,7 @@ const ConversationSchema = new mongoose.Schema(
     },
     isConversationActive: {
       type: Boolean,
+      default:true
     },
     participants: {
   type: [String],
