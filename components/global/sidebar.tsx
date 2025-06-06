@@ -5,9 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator"
+
 
 // Lucide icons
-import { LayoutDashboard, PercentCircle, Puzzle, Target, UsersRound } from "lucide-react";
+import { LayoutDashboard, PercentCircle, Puzzle, Target, User, UsersRound } from "lucide-react";
 import Image from "next/image";
 
 export function Sidebar({ user, onToggle }: { user: any; onToggle: (collapsed: boolean) => void }) {
@@ -132,7 +134,44 @@ export function Sidebar({ user, onToggle }: { user: any; onToggle: (collapsed: b
               </span>
             </Link>
           ))}
+
+
         </div>
+
+        <Separator className="my-4" />
+
+        <div className="px-3 space-y-1">
+          <Link
+            href="/profile"
+            className={cn(
+              "group flex items-center gap-x-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200",
+              pathname === "/profile"
+                ? "bg-blue-600/10 text-blue-500"
+                : "text-slate-400 hover:bg-blue-600/10 hover:text-blue-500"
+            )}
+          >
+            <span
+              className={cn(
+                "transition-colors",
+                pathname === "/profile"
+                  ? "text-blue-500"
+                  : "text-slate-400 group-hover:text-blue-500"
+              )}
+            >
+              <User size={18} />  
+            </span>
+            <span
+              className={cn(
+                "transition-opacity",
+                collapsed ? "opacity-0 w-0 hidden" : "opacity-100"
+              )}
+            >
+              Profile
+            </span>
+          </Link>
+          
+        </div>
+        
       </nav>
 
       {/* User Profile */}
