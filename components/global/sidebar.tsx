@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator"
 
 
 // Lucide icons
-import { LayoutDashboard, PercentCircle, Puzzle, Target, User, UsersRound } from "lucide-react";
+import { DollarSign, LayoutDashboard, PercentCircle, Puzzle, Target, User, UsersRound } from "lucide-react";
 import Image from "next/image";
 
 export function Sidebar({ user, onToggle }: { user: any; onToggle: (collapsed: boolean) => void }) {
@@ -27,6 +27,7 @@ export function Sidebar({ user, onToggle }: { user: any; onToggle: (collapsed: b
     { name: "Coupons", icon: <PercentCircle size={18} />, href: "/coupons" },
     { name: "Remarketing", icon: <UsersRound size={18} />, href: "/remarketing" },
     { name: "Leads", icon: <Puzzle size={18} />, href: "/leads" },
+    { name: "Pricing", icon: <DollarSign size={18} />, href: "/pricing" },
   ];
 
   return (

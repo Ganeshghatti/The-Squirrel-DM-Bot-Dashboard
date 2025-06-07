@@ -1,8 +1,8 @@
 "use client";
 
-import { Sidebar } from "../components/global/sidebar";
-import { DashboardHeader } from "../components/global/Dashboard/dashboard-header";
-import { MobileNav } from "../components/global/mobile-nav";
+import { Sidebar } from "../../components/global/sidebar";
+import { DashboardHeader } from "../../components/global/Dashboard/dashboard-header";
+import { MobileNav } from "../../components/global/mobile-nav";
 import { useAuthStore } from "@/store/authStore";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
