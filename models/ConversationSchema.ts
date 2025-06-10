@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const ConversationSchema = new mongoose.Schema(
   {
@@ -8,23 +8,23 @@ const ConversationSchema = new mongoose.Schema(
     },
     isConversationActive: {
       type: Boolean,
-      default:true
+      default: true,
     },
     participants: {
-  type: [String],
-  required: true,
-  validate: {
-    validator: function (arr: string[]) {
-      return arr.length === 2;
+      type: [String],
+      required: true,
+      validate: {
+        validator: function (arr: string[]) {
+          return arr.length === 2;
+        },
+        message: "Participants array must contain exactly 2 user IDs.",
+      },
     },
-    message: 'Participants array must contain exactly 2 user IDs.',
-  },
-},
     messages: [],
   },
   {
-    timestamps: { createdAt: true, updatedAt: 'lastUpdate' },
+    timestamps: { createdAt: true, updatedAt: "lastUpdate" },
   }
 );
 
-export default mongoose.model('Conversation', ConversationSchema);
+export default mongoose.model("Conversation", ConversationSchema);

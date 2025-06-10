@@ -2,62 +2,65 @@
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
-import {
-  MessageSquare,
-  Users,
-  BarChart3,
-  Clock,
-  User2,
-} from "lucide-react";
+import { MessageSquare, Users, BarChart3, Clock, User2 } from "lucide-react";
 import { toast } from "sonner";
 
 export function KpiCards({
   onKpiClick,
   selectedKpi,
   loading,
-  metrics
+  metrics,
 }: {
-  onKpiClick: (category: "Users" | "Messages" | null) => void;
-  selectedKpi: "Users" | "Messages" | null;
-  loading: boolean,
+  onKpiClick: (
+    category:
+      | "TotalMessages"
+      | "UniqueUsers"
+      | "AvgMessages"
+      | "ReceivedMessages"
+      | null
+  ) => void;
+  selectedKpi:
+    | "TotalMessages"
+    | "UniqueUsers"
+    | "AvgMessages"
+    | "ReceivedMessages"
+    | null;
+  loading: boolean;
   metrics: {
-    totalMessages: 0,
-    uniqueUsers: 0,
-    avgMessagesPerUser: 0,
-    messageTypeBreakdown: 0
-  }
+    totalMessages: 0;
+    uniqueUsers: 0;
+    avgMessagesPerUser: 0;
+    messageTypeBreakdown: 0;
+  };
 }) {
-
-
-
   const cards = [
     {
       title: "Total Messages",
       value: metrics?.totalMessages,
       icon: <MessageSquare className="w-5 h-5 text-blue-400" />,
       description: "All-time message count",
-      category: "Messages" as const,
+      category: "TotalMessages" as const,
     },
     {
       title: "Unique Users",
       value: metrics?.uniqueUsers,
       icon: <Users className="w-5 h-5 text-green-400" />,
       description: "Unique conversations",
-      category: "Users" as const,
+      category: "UniqueUsers" as const,
     },
     {
       title: "Average Messages",
       value: metrics?.avgMessagesPerUser,
       icon: <User2 className="w-5 h-5 text-amber-400" />,
       description: "Average Message Count For  User",
-      category: "Users" as const,
+      category: "AvgMessages" as const,
     },
     {
-      title: "Recieved messages",
+      title: "Received Messages",
       value: metrics?.messageTypeBreakdown,
       icon: <Clock className="w-5 h-5 text-sky-600" />,
-      description: "Total Recieved Messages",
-      category: "Messages" as const,
+      description: "Total Received Messages",
+      category: "ReceivedMessages" as const,
     },
   ];
 
@@ -83,15 +86,14 @@ export function KpiCards({
       {cards.map((card, index) => (
         <div
           key={index}
-          className={`bg-zinc-900/60 border ${selectedKpi === card.category
-            ? "border-blue-500"
-            : "border-blue-900/30"
-            } rounded-xl p-5 backdrop-blur-sm cursor-pointer
+          className={`bg-zinc-900/60 border ${
+            selectedKpi === card.category
+              ? "border-blue-500"
+              : "border-blue-900/30"
+          } rounded-xl p-5 backdrop-blur-sm cursor-pointer
              hover:border-blue-500 transition-colors justify-between flex flex-col`}
           onClick={() =>
-            onKpiClick(
-              selectedKpi === card.category ? null : card.category
-            )
+            onKpiClick(selectedKpi === card.category ? null : card.category)
           }
         >
           <div className="flex items-center gap-2 mb-2 text-zinc-400">

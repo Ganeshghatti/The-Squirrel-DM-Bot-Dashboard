@@ -22,7 +22,9 @@ export async function authenticateCompany(request: NextRequest) {
       process.env.JWT_SECRET || "your_jwt_secret"
     ) as { companyId: string };
 
-    const company = await Company.findById(decoded.companyId).select("-password");
+    const company = await Company.findById(decoded.companyId).select(
+      "-password"
+    );
 
     if (!company) {
       return {

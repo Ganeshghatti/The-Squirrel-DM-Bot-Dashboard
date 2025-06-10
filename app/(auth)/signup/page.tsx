@@ -17,6 +17,8 @@ import {
   EyeOff,
   Mail,
   Lock,
+  User,
+  Phone,
   AlertCircle,
   ArrowRight,
   Sparkles,
@@ -24,21 +26,33 @@ import {
   Instagram,
 } from "lucide-react";
 
-const loginSchema = z.object({
+const signupSchema = z.object({
   email: z.string().email("Invalid email address").min(1, "Email is required"),
+  name: z
+    .string()
+    .min(2, "Company Name must be at least 2 characters")
+    .max(50, "Company Name too long"),
   password: z
     .string()
-    .min(5, "Password must be at least 5 characters")
-    .max(100, "Password must be 100 characters or less"),
+    .min(8, "Password must be at least 8 characters")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+      "Password must contain uppercase, lowercase, number and special character"
+    ),
+  phone: z
+    .string()
+    .min(10, "Phone number must be at least 10 digits")
+    .regex(/^\+?[\d\s\-\(\)]+$/, "Invalid phone number"),
 });
 
-type LoginForm = z.infer<typeof loginSchema>;
+type SignupForm = z.infer<typeof signupSchema>;
 
-export default function Login() {
+export default function Signup() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
   const setToken = useAuthStore((state) => state.setToken);
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const token = useAuthStore((state) => state.token);
@@ -48,12 +62,15 @@ export default function Login() {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<SignupForm>({
+    resolver: zodResolver(signupSchema),
     mode: "onChange",
   });
 
+  const password = watch("password");
   const email = watch("email");
+  const name = watch("name");
+  const phone = watch("phone");
 
   useEffect(() => {
     if (hasHydrated && token) {
@@ -61,12 +78,28 @@ export default function Login() {
     }
   }, [hasHydrated, token, router]);
 
-  const onSubmit = async (data: LoginForm) => {
+  useEffect(() => {
+    if (password) {
+      let strength = 0;
+      if (password.length >= 8) strength++;
+      if (/[A-Z]/.test(password)) strength++;
+      if (/[a-z]/.test(password)) strength++;
+      if (/\d/.test(password)) strength++;
+      if (/[@$!%*?&]/.test(password)) strength++;
+      setPasswordStrength(strength);
+    } else {
+      setPasswordStrength(0);
+    }
+  }, [password]);
+
+  const onSubmit = async (data: SignupForm) => {
     setError("");
     setLoading(true);
 
+    console.log("Submitting signup data:", data);
+
     try {
-      const res = await fetch("/api/auth", {
+      const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -74,12 +107,13 @@ export default function Login() {
       const response = await res.json();
 
       if (!res.ok) {
-        toast.error("Login Failed");
-        setError(response.error || "Login failed");
+        toast.error("Signup Failed");
+        setError(response.error || "Signup failed");
         setLoading(false);
         return;
       }
-      toast.success("Login Successful");
+
+      toast.success("Account created successfully!");
       setToken(response.token);
       router.push("/");
     } catch (err: any) {
@@ -87,6 +121,20 @@ export default function Login() {
       setError("Something went wrong. Please try again.");
       setLoading(false);
     }
+  };
+
+  const getPasswordStrengthColor = () => {
+    if (passwordStrength <= 2) return "bg-red-500";
+    if (passwordStrength <= 3) return "bg-yellow-500";
+    if (passwordStrength <= 4) return "bg-blue-500";
+    return "bg-emerald-500";
+  };
+
+  const getPasswordStrengthText = () => {
+    if (passwordStrength <= 2) return "Weak";
+    if (passwordStrength <= 3) return "Fair";
+    if (passwordStrength <= 4) return "Good";
+    return "Strong";
   };
 
   if (!hasHydrated) {
@@ -99,7 +147,7 @@ export default function Login() {
               <Skeleton className="h-8 w-40 bg-neutral-800/60" />
             </div>
             <div className="space-y-6">
-              {[...Array(2)].map((_, i) => (
+              {[...Array(4)].map((_, i) => (
                 <div key={i} className="space-y-3">
                   <Skeleton className="h-4 w-24 bg-neutral-800/60" />
                   <Skeleton className="h-12 w-full bg-neutral-800/60" />
@@ -136,15 +184,15 @@ export default function Login() {
                 <Sparkles className="w-8 h-8 text-white" />
               </div>
               <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">
-                Welcome Back
+                Welcome to Insta Bot
               </h1>
               <p className="text-neutral-400 leading-relaxed">
-                Sign in to continue your Instagram automation journey
+                Start your journey with AI-powered Instagram automation
               </p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* Social Login Options */}
+              {/* Social Signup Options */}
               <div className="space-y-3"></div>
 
               {/* Form Fields */}
@@ -174,6 +222,55 @@ export default function Login() {
                   )}
                 </div>
 
+                {/* Company Name and Phone */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-neutral-300 flex items-center space-x-2">
+                      <User className="w-4 h-4" />
+                      <span>Company Name</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        {...register("name")}
+                        className="h-12 px-4 bg-neutral-800/30 border border-neutral-700/50 rounded-xl text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/30 transition-all text-sm"
+                        placeholder="Company name"
+                      />
+                      {name && !errors.name && (
+                        <CheckCircle2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-emerald-400" />
+                      )}
+                    </div>
+                    {errors.name && (
+                      <p className="text-xs text-red-400 flex items-center space-x-1">
+                        <AlertCircle className="w-3 h-3" />
+                        <span>{errors.name.message}</span>
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-neutral-300 flex items-center space-x-2">
+                      <Phone className="w-4 h-4" />
+                      <span>Phone Number</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        {...register("phone")}
+                        className="h-12 px-4 bg-neutral-800/30 border border-neutral-700/50 rounded-xl text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/30 transition-all text-sm"
+                        placeholder="+91 12345 67890"
+                      />
+                      {phone && !errors.phone && (
+                        <CheckCircle2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-emerald-400" />
+                      )}
+                    </div>
+                    {errors.phone && (
+                      <p className="text-xs text-red-400 flex items-center space-x-1">
+                        <AlertCircle className="w-3 h-3" />
+                        <span>{errors.phone.message}</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
                 {/* Password */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-neutral-300 flex items-center space-x-2">
@@ -185,7 +282,7 @@ export default function Login() {
                       {...register("password")}
                       type={showPassword ? "text" : "password"}
                       className="h-12 px-4 pr-12 bg-neutral-800/30 border border-neutral-700/50 rounded-xl text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/30 transition-all text-sm"
-                      placeholder="Enter your password"
+                      placeholder="Create a strong password"
                     />
                     <button
                       type="button"
@@ -199,22 +296,42 @@ export default function Login() {
                       )}
                     </button>
                   </div>
+                  {password && (
+                    <div className="space-y-2 animate-in slide-in-from-bottom-2 duration-300">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-neutral-400">
+                          Password strength
+                        </span>
+                        <span
+                          className={`font-medium ${
+                            passwordStrength <= 2
+                              ? "text-red-400"
+                              : passwordStrength <= 3
+                              ? "text-yellow-400"
+                              : passwordStrength <= 4
+                              ? "text-blue-400"
+                              : "text-emerald-400"
+                          }`}
+                        >
+                          {getPasswordStrengthText()}
+                        </span>
+                      </div>
+                      <div className="w-full bg-neutral-700/50 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all duration-500 ${getPasswordStrengthColor()}`}
+                          style={{
+                            width: `${(passwordStrength / 5) * 100}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                   {errors.password && (
                     <p className="text-sm text-red-400 flex items-center space-x-2">
                       <AlertCircle className="w-4 h-4" />
                       <span>{errors.password.message}</span>
                     </p>
                   )}
-                </div>
-
-                {/* Forgot Password Link */}
-                <div className="text-right">
-                  <Link
-                    href="/forgot-password"
-                    className="text-sm text-neutral-400 hover:text-white transition-colors underline underline-offset-2"
-                  >
-                    Forgot your password?
-                  </Link>
                 </div>
               </div>
 
@@ -237,25 +354,25 @@ export default function Login() {
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-neutral-950/30 border-t-neutral-950 rounded-full animate-spin" />
-                    <span>Signing In...</span>
+                    <span>Creating Account...</span>
                   </>
                 ) : (
                   <>
-                    <span>Sign In</span>
+                    <span>Create Account</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </Button>
 
-              {/* Signup Link */}
+              {/* Login Link */}
               <div className="text-center pt-4 border-t border-neutral-800/30">
                 <p className="text-sm text-neutral-400">
-                  Don't have an account?{" "}
+                  Already have an account?{" "}
                   <Link
-                    href="/signup"
+                    href="/login"
                     className="text-white hover:text-neutral-300 font-medium transition-colors underline underline-offset-2"
                   >
-                    Create account
+                    Sign in
                   </Link>
                 </p>
               </div>
@@ -264,7 +381,17 @@ export default function Login() {
 
           {/* Footer */}
           <div className="text-center mt-8 text-neutral-500 text-xs">
-            <p>© 2024 Insta Bot. All rights reserved.</p>
+            <p>
+              By Signing Up to our Website you agree to our{" "}
+              <Link href="/terms" className="underline underline-offset-4">
+                Terms of Service
+              </Link>{" "}
+              and {""}
+              <Link href="/privacy" className="underline underline-offset-4">
+                Privacy Policy
+              </Link>
+              .
+            </p>
           </div>
         </div>
       </div>

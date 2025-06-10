@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { TimeRange } from "./TimeRange";
 
-export function DashboardHeader({ 
+export function DashboardHeader({
   onRefresh,
   timeRange,
-  onTimeRangeChange
-}: { 
+  onTimeRangeChange,
+}: {
   onRefresh: () => void;
   timeRange: string;
   onTimeRangeChange: (range: string) => void;
@@ -21,18 +21,20 @@ export function DashboardHeader({
         <h1 className="text-2xl font-display font-semibold text-white tracking-tight md:text-3xl">
           Instagram Bot Dashboard
         </h1>
-        <p className="mt-1 text-sm text-slate-400 font-body">Monitor and manage your Instagram DM automation</p>
+        <p className="mt-1 text-sm text-slate-400 font-body">
+          Monitor and manage your Instagram DM automation
+        </p>
       </div>
       <div className="flex items-center space-x-3">
-        <TimeRange 
+        <TimeRange
           selectedRange={timeRange}
           onRangeChange={onTimeRangeChange}
         />
-        <Button 
+        <Button
           onClick={() => {
             router.refresh();
             onRefresh();
-          }} 
+          }}
           className="bg-blue-600 hover:bg-blue-700 text-white"
         >
           <svg
