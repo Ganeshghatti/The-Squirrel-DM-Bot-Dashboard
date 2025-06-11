@@ -15,6 +15,9 @@ const AppointmentSchema = new mongoose.Schema({
   user_instagram_id: {
     type: String,
   },
+  company_instagram_id: {
+    type: String,
+  },
   date: {
     type: Date,
     required: true,
