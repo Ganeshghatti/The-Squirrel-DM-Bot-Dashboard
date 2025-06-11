@@ -18,6 +18,7 @@ export async function POST(request: Request) {
       "startTime",
       "endTime",
       "service",
+      "user_instagram_id",
     ];
     const missingFields = requiredFields.filter((field) => !body[field]);
 
