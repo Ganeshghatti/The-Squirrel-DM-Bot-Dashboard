@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Calendar,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -40,6 +41,11 @@ export function Sidebar({
   const navItems = [
     { name: "Dashboard", icon: <LayoutDashboard size={18} />, href: "/" },
     {
+      name: "Appointments",
+      icon: <Calendar size={18} />,
+      href: "/appointments",
+    },
+    {
       name: "Product Details",
       icon: <Target size={18} />,
       href: "/product-details",
@@ -50,7 +56,6 @@ export function Sidebar({
       icon: <UsersRound size={18} />,
       href: "/remarketing",
     },
-    { name: "Leads", icon: <Puzzle size={18} />, href: "/leads" },
     { name: "Pricing", icon: <DollarSign size={18} />, href: "/pricing" },
   ];
 
