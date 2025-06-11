@@ -12,6 +12,9 @@ const AppointmentSchema = new mongoose.Schema({
   email: {
     type: String,
   },
+  user_instagram_id: {
+    type: String,
+  },
   date: {
     type: Date,
     required: true,
