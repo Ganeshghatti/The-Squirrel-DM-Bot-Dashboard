@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import Appointment from "@/models/AppointmentSchema";
 import { connectDB } from "@/lib/db";
+import { authenticateCompany } from "@/lib/auth";
+import { NextRequest } from "next/server";
 
 export async function POST(request: Request) {
   try {
@@ -83,6 +85,43 @@ export async function POST(request: Request) {
     return NextResponse.json(appointment, { status: 201 });
   } catch (error) {
     console.error("Error creating appointment:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    // Connect to MongoDB
+    await connectDB();
+
+    const authResult = await authenticateCompany(request);
+
+    if (!authResult.success) return authResult.response;
+
+    const company = authResult.company;
+
+    // Get company_instagram_id from the user's session
+    const companyInstagramId = company.company_instagram_id;
+
+    if (!companyInstagramId) {
+      return NextResponse.json(
+        { error: "Company Instagram ID not found" },
+        { status: 400 }
+      );
+    }
+    console.log("Company Instagram ID:", companyInstagramId);
+    console.log("Fetching appointments...");
+    // Fetch appointments for the company
+    const appointments = await Appointment.find({
+      company_instagram_id: companyInstagramId,
+    }).sort({ date: -1, startTime: -1 });
+
+    return NextResponse.json(appointments);
+  } catch (error) {
+    console.error("Error fetching appointments:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
