@@ -151,6 +151,54 @@ export default function Appointments() {
     });
   };
 
+  const handleExport = () => {
+    // Create CSV header
+    const headers = [
+      "Name",
+      "Date",
+      "Start Time",
+      "End Time",
+      "Service",
+      "Email",
+      "Phone",
+      "Status",
+      "Notes",
+    ];
+
+    // Create CSV rows
+    const rows = appointments.map((appointment) => [
+      appointment.name,
+      formatDate(appointment.date),
+      formatTime(appointment.startTime),
+      formatTime(appointment.endTime),
+      appointment.service,
+      appointment.email || "",
+      appointment.phone,
+      appointment.status,
+      appointment.notes || "",
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `appointments_${new Date().toISOString().split("T")[0]}.csv`
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Loading state
   if (!hasHydrated || loading) {
     return (
@@ -310,6 +358,14 @@ export default function Appointments() {
                     <Button className="bg-neutral-800/60 hover:bg-neutral-700/60 border border-neutral-700/50 text-white px-4 py-2 rounded-xl transition-all duration-200 flex items-center space-x-2">
                       <Filter className="w-4 h-4" />
                       <span>Filter</span>
+                    </Button>
+
+                    <Button
+                      onClick={handleExport}
+                      className="bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-400 px-4 py-2 rounded-xl transition-all duration-200 flex items-center space-x-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Export</span>
                     </Button>
                   </div>
                 </div>
