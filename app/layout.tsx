@@ -1,8 +1,9 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter, Montserrat, JetBrains_Mono } from "next/font/google"
-import "./globals.css"
-import { Toaster } from "@/components/ui/sonner"
+import type React from "react";
+import type { Metadata } from "next";
+import { Inter, Montserrat, JetBrains_Mono } from "next/font/google";
+import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
+import Analytics from "@/components/analytics";
 
 // Load Inter font
 const inter = Inter({
@@ -10,7 +11,7 @@ const inter = Inter({
   display: "swap",
   variable: "--font-inter",
   weight: ["300", "400", "500", "600", "700"],
-})
+});
 
 // Load Montserrat font
 const montserrat = Montserrat({
@@ -18,7 +19,7 @@ const montserrat = Montserrat({
   display: "swap",
   variable: "--font-montserrat",
   weight: ["500", "600", "700"],
-})
+});
 
 // Load JetBrains Mono font
 const jetbrainsMono = JetBrains_Mono({
@@ -26,23 +27,27 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
   variable: "--font-jetbrains-mono",
   weight: ["400", "500"],
-})
+});
 
 export const metadata: Metadata = {
   title: "Instagram Bot Dashboard",
   description: "Monitor and manage your Instagram DM automation bot",
-}
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} ${montserrat.variable} ${jetbrainsMono.variable}`} >{children}
+      <body
+        className={`${inter.variable} ${montserrat.variable} ${jetbrainsMono.variable}`}
+      >
+        <Analytics />
+        {children}
         <Toaster richColors />
       </body>
     </html>
-  )
+  );
 }

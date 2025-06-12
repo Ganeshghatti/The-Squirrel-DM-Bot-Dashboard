@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import { Company } from "@/models/CompanySchema";
-import { ChatHistory } from "@/models/ChatHistorySchema";
+// import { ChatHistory } from "@/models/ChatHistorySchema";
+import Conversation from "@/models/ConversationSchema";
 import { authenticateCompany } from "@/lib/auth";
 
 function slugify(text: string) {
@@ -163,7 +164,7 @@ export async function DELETE(request: NextRequest) {
     // Delete the company
     await Company.findByIdAndDelete(company._id);
 
-    await ChatHistory.deleteMany({
+    await Conversation.deleteMany({
       company_instagram_id: company.company_instagram_id,
     });
 

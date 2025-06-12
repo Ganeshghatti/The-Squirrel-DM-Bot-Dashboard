@@ -26,10 +26,10 @@ export function DashboardHeader({
         </p>
       </div>
       <div className="flex items-center space-x-3">
-        <TimeRange
+        {/* <TimeRange
           selectedRange={timeRange}
           onRangeChange={onTimeRangeChange}
-        />
+        /> */}
         <Button
           onClick={() => {
             router.refresh();

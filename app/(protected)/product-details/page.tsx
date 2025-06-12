@@ -98,7 +98,7 @@ export default function ProductDetails() {
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -106,6 +106,8 @@ export default function ProductDetails() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [textInput, setTextInput] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   const handleSidebarToggle = (collapsed: boolean) => {
     setIsTransitioning(true);
@@ -166,10 +168,87 @@ export default function ProductDetails() {
     }
   };
 
+  // Extract text from PDF using server-side API
+  const extractTextFromPDF = async (file: File) => {
+    setIsProcessing(true);
+    try {
+      const formData = new FormData();
+      formData.append("pdf", file);
+
+      const response = await fetch("/api/extract-pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to extract PDF text");
+      }
+
+      const data = await response.json();
+
+      // Add extracted text to textarea
+      const newContent = textInput
+        ? `${textInput}\n\n--- Content from ${file.name} ---\n${data.text}`
+        : `--- Content from ${file.name} ---\n${data.text}`;
+
+      setTextInput(newContent);
+      toast.success(`Text extracted from "${file.name}"`);
+    } catch (error) {
+      console.error("Error extracting PDF text:", error);
+      toast.error("Failed to extract text from PDF");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
   const handleFiles = (files: FileList) => {
-    Array.from(files).forEach((file) => {
-      toast.success(`File "${file.name}" uploaded successfully!`);
+    Array.from(files).forEach(async (file) => {
+      if (file.type === "application/pdf") {
+        await extractTextFromPDF(file);
+      } else {
+        toast.success(`File "${file.name}" uploaded successfully!`);
+      }
     });
+  };
+
+  const sendTextToWebhook = async () => {
+    if (!textInput.trim()) {
+      toast.error("Please enter some text content");
+      return;
+    }
+
+    if (!user?._id) {
+      toast.error("User not authenticated");
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      const response = await fetch(
+        "https://n8n.srv833013.hstgr.cloud/webhook/db8862e2-a3f1-4bfc-b18d-37279febf0a2",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text: textInput,
+            company_id: user._id,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to send data to webhook");
+      }
+
+      toast.success("Content sent successfully!");
+      setTextInput(""); // Clear the textarea after successful send
+    } catch (error) {
+      console.error("Error sending data to webhook:", error);
+      toast.error("Failed to send content. Please try again.");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -364,63 +443,23 @@ export default function ProductDetails() {
                   </h2>
                 </div>
 
-                {/* File Upload Area */}
-                <div
-                  className={cn(
-                    "relative border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300",
-                    dragActive
-                      ? "border-blue-500/50 bg-blue-500/5"
-                      : "border-neutral-700/50 hover:border-neutral-600/50"
-                  )}
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
-                >
-                  <div className="space-y-4">
-                    <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500/20 to-purple-600/20 rounded-2xl flex items-center justify-center border border-blue-500/30">
-                      <Upload className="w-8 h-8 text-blue-400" />
-                    </div>
-                    <div>
-                      <p className="text-lg font-medium text-white mb-2">
-                        Drop files here or click to upload
-                      </p>
-                      <p className="text-neutral-400 text-sm">
-                        Support for PDF, Images, Text, Excel, and more
-                      </p>
-                    </div>
-                    <Button className="bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-400 px-6 py-3 rounded-xl transition-all duration-200">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Choose Files
-                    </Button>
-                  </div>
-                  <input
-                    type="file"
-                    multiple
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    onChange={(e) =>
-                      e.target.files && handleFiles(e.target.files)
-                    }
-                  />
-                </div>
+                {/* File Upload Area - Update this section */}
 
                 {/* Text Input Section */}
                 <div className="mt-6">
-                  <h3 className="text-lg font-medium text-white mb-3">
-                    Or add text content
-                  </h3>
                   <Textarea
                     placeholder="Enter product descriptions, FAQs, or any relevant information..."
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
                     className="bg-neutral-800/50 border-neutral-700/50 text-white placeholder-neutral-500 focus:border-emerald-500/50 focus:ring-emerald-500/20 rounded-xl min-h-32 resize-none"
-                  />
+                  />{" "}
                   <Button
+                    onClick={sendTextToWebhook}
                     className="mt-3 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-400 px-4 py-2 rounded-xl transition-all duration-200"
-                    disabled={!textInput.trim()}
+                    disabled={!textInput.trim() || isSending}
                   >
                     <Zap className="w-4 h-4 mr-2" />
-                    Add Text Content
+                    {isSending ? "Sending..." : "Add Text Content"}
                   </Button>
                 </div>
               </motion.div>

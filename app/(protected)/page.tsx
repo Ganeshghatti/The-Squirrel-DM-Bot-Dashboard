@@ -9,7 +9,16 @@ import { useRouter } from "next/navigation";
 import DashboardSkeleton from "@/components/global/Dashboard/Skeleton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import DashboardContent from "@/components/global/Dashboard/DashboardContent";
+import {
+  MessageSquare,
+  Users,
+  TrendingUp,
+  Activity,
+  Clock,
+  BarChart3,
+  UserPlus,
+  Target,
+} from "lucide-react";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -22,6 +31,8 @@ export default function Dashboard() {
   const [timeRange, setTimeRange] = useState("7d");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
 
   const handleSidebarToggle = (collapsed: boolean) => {
     setIsTransitioning(true);
@@ -71,9 +82,45 @@ export default function Dashboard() {
         router.push("/login");
       }
     };
-
     fetchUser();
   }, [token, router, hasHydrated]);
+
+  // Fetch analytics data
+  useEffect(() => {
+    if (!hasHydrated) return;
+
+    const fetchAnalytics = async () => {
+      if (!token) {
+        setAnalyticsLoading(false);
+        return;
+      }
+
+      try {
+        setAnalyticsLoading(true);
+        const res = await fetch("/api/analytics", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          toast.error("Failed to fetch analytics data");
+          console.error("Analytics API error:", res.status);
+          return;
+        }
+
+        const data = await res.json();
+        if (data.success && data.analytics) {
+          setAnalyticsData(data.analytics);
+        }
+      } catch (err) {
+        toast.error("Unable to fetch analytics data");
+        console.error("Network error:", err);
+      } finally {
+        setAnalyticsLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, [token, refreshKey, hasHydrated]);
   // Premium loading state with minimal elegance
   if (!hasHydrated || loading) {
     return (
@@ -208,14 +255,90 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
-              )}
-
+              )}{" "}
               {/* Main dashboard content */}
               <div className="animate-in fade-in-0 slide-in-from-bottom-6 duration-700 delay-200">
-                <DashboardContent
-                  refreshKey={refreshKey}
-                  timeRange={timeRange}
-                />
+                {/* Analytics Cards */}
+                <div className="space-y-8">
+                  {/* Core Metrics */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-4 tracking-tight">
+                      Core Metrics
+                    </h3>
+                    {analyticsLoading ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[1, 2, 3, 4].map((i) => (
+                          <div
+                            key={i}
+                            className="bg-neutral-900/60 backdrop-blur-3xl border border-neutral-700/30 rounded-2xl p-6 shadow-2xl shadow-black/20 animate-pulse"
+                          >
+                            <div className="h-5 w-24 bg-neutral-800/60 rounded mb-3"></div>
+                            <div className="h-8 w-16 bg-neutral-800/60 rounded mb-2"></div>
+                            <div className="h-4 w-32 bg-neutral-800/60 rounded"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : analyticsData ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {/* Total Messages Card */}
+                        <div className="group relative bg-neutral-900/60 backdrop-blur-3xl border border-neutral-700/30 rounded-2xl p-6 shadow-2xl shadow-black/20 hover:shadow-black/40 transition-all duration-300 hover:-translate-y-1 hover:border-neutral-600/50">
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/5 opacity-50 group-hover:opacity-70 transition-opacity duration-300" />
+                          <div className="relative">
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="bg-blue-500/20 text-blue-400 p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                                <MessageSquare className="w-5 h-5" />
+                              </div>
+                              <div className="text-xs font-medium text-emerald-400 flex items-center gap-1"></div>
+                            </div>
+                            <div className="mb-2">
+                              <h4 className="text-sm font-medium text-neutral-400 mb-1">
+                                Total Messages
+                              </h4>
+                              <div className="text-3xl font-bold text-white tracking-tight">
+                                {analyticsData.totalMessages?.toLocaleString() ||
+                                  "0"}
+                              </div>
+                            </div>
+                            <p className="text-xs text-neutral-500 leading-relaxed">
+                              All messages across conversations
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Total Conversations Card */}
+                        <div className="group relative bg-neutral-900/60 backdrop-blur-3xl border border-neutral-700/30 rounded-2xl p-6 shadow-2xl shadow-black/20 hover:shadow-black/40 transition-all duration-300 hover:-translate-y-1 hover:border-neutral-600/50">
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-green-500/20 to-green-600/5 opacity-50 group-hover:opacity-70 transition-opacity duration-300" />
+                          <div className="relative">
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="bg-green-500/20 text-green-400 p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                                <Users className="w-5 h-5" />
+                              </div>
+                              <div className="text-xs font-medium text-emerald-400 flex items-center gap-1"></div>
+                            </div>
+                            <div className="mb-2">
+                              <h4 className="text-sm font-medium text-neutral-400 mb-1">
+                                Total Conversations
+                              </h4>
+                              <div className="text-3xl font-bold text-white tracking-tight">
+                                {analyticsData.totalConversation?.toLocaleString() ||
+                                  "0"}
+                              </div>
+                            </div>
+                            <p className="text-xs text-neutral-500 leading-relaxed">
+                              Active conversation threads
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-neutral-900/60 backdrop-blur-3xl border border-neutral-700/30 rounded-2xl p-8 text-center">
+                        <p className="text-neutral-400">
+                          No analytics data available
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
