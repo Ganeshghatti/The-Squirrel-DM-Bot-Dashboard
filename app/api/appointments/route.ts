@@ -3,6 +3,10 @@ import Appointment from "@/models/AppointmentSchema";
 import { connectDB } from "@/lib/db";
 import { authenticateCompany } from "@/lib/auth";
 import { NextRequest } from "next/server";
+import {
+  sendAppointmentCreatedEmail,
+  sendAppointmentUpdatedEmail,
+} from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -77,10 +81,11 @@ export async function POST(request: Request) {
         { error: "Invalid phone number format" },
         { status: 400 }
       );
-    }
-
-    // Create new appointment
+    } // Create new appointment
     const appointment = await Appointment.create(body);
+
+    // Send email notification
+    await sendAppointmentCreatedEmail(appointment);
 
     return NextResponse.json(appointment, { status: 201 });
   } catch (error) {
@@ -122,6 +127,109 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(appointments);
   } catch (error) {
     console.error("Error fetching appointments:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    // Connect to MongoDB
+    await connectDB();
+
+    const authResult = await authenticateCompany(request);
+    if (!authResult.success) return authResult.response;
+
+    const body = await request.json();
+    const { appointmentId, ...updateData } = body;
+
+    if (!appointmentId) {
+      return NextResponse.json(
+        { error: "Appointment ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate date and time formats if provided
+    if (updateData.date) {
+      const date = new Date(updateData.date);
+      if (isNaN(date.getTime())) {
+        return NextResponse.json(
+          { error: "Invalid date format" },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (updateData.startTime || updateData.endTime) {
+      const startTime = updateData.startTime
+        ? new Date(updateData.startTime)
+        : null;
+      const endTime = updateData.endTime ? new Date(updateData.endTime) : null;
+
+      if (
+        (startTime && isNaN(startTime.getTime())) ||
+        (endTime && isNaN(endTime.getTime()))
+      ) {
+        return NextResponse.json(
+          { error: "Invalid time format" },
+          { status: 400 }
+        );
+      }
+
+      // If both times are provided, validate that end time is after start time
+      if (startTime && endTime && endTime <= startTime) {
+        return NextResponse.json(
+          { error: "End time must be after start time" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate email format if provided
+    if (updateData.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(updateData.email)) {
+        return NextResponse.json(
+          { error: "Invalid email format" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate phone number format if provided
+    if (updateData.phone) {
+      const phoneRegex = /^\+?[\d\s-]{10,}$/;
+      if (!phoneRegex.test(updateData.phone)) {
+        return NextResponse.json(
+          { error: "Invalid phone number format" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Update appointment
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
+      appointmentId,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedAppointment) {
+      return NextResponse.json(
+        { error: "Appointment not found" },
+        { status: 404 }
+      );
+    }
+
+    // Send email notification
+    await sendAppointmentUpdatedEmail(updatedAppointment);
+
+    return NextResponse.json(updatedAppointment);
+  } catch (error) {
+    console.error("Error updating appointment:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
