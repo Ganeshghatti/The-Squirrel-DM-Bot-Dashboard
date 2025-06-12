@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import { Company } from "@/models/CompanySchema";
+import { sendUserRegistrationEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -68,10 +69,16 @@ export async function POST(request: Request) {
       keywords: ["automation", "ai", "automate"],
       access_token:
         "IGAAJZCDeZCjlzFBZAE1TT1BZASTNPQzI4WkRzMW9wZAG94ZAkdFTVN0UlhxSmEtMUVZAYV95cTRCTDlWUFlXT0JaYXhsanBsNEVDNHNhY3FuQzVVaTZAudzNzX3otektteHpoMjAzZAFFuR2p2d0d4NncxMU81NkNNbFVzeWEwUWRibDB0QQZDZD",
-    });
-
-    // Save the company to the database
+    }); // Save the company to the database
     await newCompany.save();
+
+    // Send registration email notification
+    await sendUserRegistrationEmail({
+      name,
+      email,
+      phone,
+      company_id: newCompany.company_id,
+    });
 
     // Generate JWT token
     const token = jwt.sign(
