@@ -245,13 +245,17 @@ export default function Pricing() {
           isTransitioning && "transition-transform"
         )}
       >
+        {" "}
         {/* Mobile navigation */}
-        <div className="lg:hidden bg-neutral-900/60 backdrop-blur-3xl border-b border-neutral-800/30 shadow-lg shadow-black/10">
+        <div className="lg:hidden">
           <MobileNav />
         </div>
-
         {/* Main content */}
-        <main className="flex-1 flex" role="main" aria-label="Pricing Content">
+        <main
+          className="flex-1 flex pt-16 lg:pt-0"
+          role="main"
+          aria-label="Pricing Content"
+        >
           <div className="h-full px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
             {/* Header Section */}
             <div className="text-center mb-16">

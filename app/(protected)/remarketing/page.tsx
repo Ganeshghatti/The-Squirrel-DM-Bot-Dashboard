@@ -385,14 +385,14 @@ export default function Coupons() {
           isTransitioning && "transition-transform"
         )}
       >
+        {" "}
         {/* Mobile navigation */}
-        <div className="lg:hidden bg-neutral-900/60 backdrop-blur-3xl border-b border-neutral-800/30 shadow-lg shadow-black/10">
+        <div className="lg:hidden">
           <MobileNav />
         </div>
-
         {/* Main content */}
         <main
-          className="flex-1 relative"
+          className="flex-1 relative pt-16 lg:pt-0"
           role="main"
           aria-label="Coupon Content"
         >

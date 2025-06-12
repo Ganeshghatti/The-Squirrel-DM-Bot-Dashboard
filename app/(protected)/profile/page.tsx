@@ -131,10 +131,10 @@ export default function CompanyProfile() {
               sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
             )}
           >
-            <div className="lg:hidden bg-neutral-900/60 backdrop-blur-3xl border-b border-neutral-800/30">
+            <div className="lg:hidden bg-neutral-900/60 backdrop-blur-3xl border-b border-neutral-800/30 relative z-[110]">
               <MobileNav />
             </div>
-            <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+            <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full pt-16 lg:pt-0">
               <div className="space-y-8">
                 <div className="flex items-center space-x-4">
                   <Skeleton className="h-12 w-12 rounded-2xl bg-neutral-800/60" />
@@ -201,10 +201,10 @@ export default function CompanyProfile() {
               sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
             )}
           >
-            <div className="lg:hidden bg-neutral-900/60 backdrop-blur-3xl border-b border-neutral-800/30">
+            <div className="lg:hidden bg-neutral-900/60 backdrop-blur-3xl border-b border-neutral-800/30 relative z-[110]">
               <MobileNav />
             </div>
-            <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+            <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full pt-16 lg:pt-0">
               <div className="flex items-center justify-center min-h-[60vh]">
                 <div className="bg-red-900/20 backdrop-blur-2xl border border-red-800/30 rounded-3xl p-8 text-center max-w-md">
                   <div className="w-16 h-16 bg-red-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -263,13 +263,13 @@ export default function CompanyProfile() {
           isTransitioning && "transition-transform"
         )}
       >
+        {" "}
         {/* Mobile navigation */}
-        <div className="lg:hidden bg-neutral-900/60 backdrop-blur-3xl border-b border-neutral-800/30 shadow-lg shadow-black/10">
+        <div className="lg:hidden">
           <MobileNav />
         </div>
-
         <main
-          className="flex-1 relative"
+          className="flex-1 relative pt-16 lg:pt-0"
           role="main"
           aria-label="Profile Content"
         >

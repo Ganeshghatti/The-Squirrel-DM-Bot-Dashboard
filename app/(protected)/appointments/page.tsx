@@ -261,7 +261,6 @@ export default function Appointments() {
         {/* Subtle grid pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.005)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.005)_1px,transparent_1px)] bg-[size:100px_100px]" />
       </div>
-
       {/* Floating elements */}
       <div
         className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-white/[0.015] to-transparent rounded-full blur-3xl pointer-events-none"
@@ -274,30 +273,28 @@ export default function Appointments() {
           animationDelay: "2s",
         }}
       />
-
       {/* Sidebar */}
       <div className="relative z-20">
         <div className="fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-out">
           <Sidebar user={user} onToggle={handleSidebarToggle} />
         </div>
       </div>
-
-      {/* Main content */}
+      {/* Main content */}{" "}
       <div
         className={cn(
-          "flex-1 flex flex-col transition-all duration-300 ease-out relative z-10",
+          "flex-1 flex flex-col transition-all duration-300 ease-out relative",
           sidebarCollapsed ? "lg:ml-16" : "lg:ml-64",
           isTransitioning && "transition-transform"
         )}
       >
+        {" "}
         {/* Mobile navigation */}
-        <div className="lg:hidden bg-neutral-900/60 backdrop-blur-3xl border-b border-neutral-800/30 shadow-lg shadow-black/10">
+        <div className="lg:hidden">
           <MobileNav />
         </div>
-
         {/* Main content */}
         <main
-          className="flex-1 relative"
+          className="flex-1 relative pt-16 lg:pt-0"
           role="main"
           aria-label="Appointments Content"
         >
@@ -563,7 +560,6 @@ export default function Appointments() {
           />
         </main>
       </div>
-
       {/* Custom animations */}
       <style jsx>{`
         @keyframes float {

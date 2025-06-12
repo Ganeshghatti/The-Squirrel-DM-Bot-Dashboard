@@ -198,22 +198,22 @@ export default function Dashboard() {
           <Sidebar user={user} onToggle={handleSidebarToggle} />
         </div>
       </div>
-      {/* Main content area with smooth transitions */}
+      {/* Main content area with smooth transitions */}{" "}
       <div
         className={cn(
-          "flex-1 flex flex-col transition-all duration-300 ease-out relative z-10",
+          "flex-1 flex flex-col transition-all duration-300 ease-out relative",
           sidebarCollapsed ? "lg:ml-16" : "lg:ml-64",
           isTransitioning && "transition-transform"
         )}
       >
+        {" "}
         {/* Mobile navigation with enhanced glass effect */}
-        <div className="lg:hidden bg-neutral-900/60 backdrop-blur-3xl border-b border-neutral-800/30 shadow-lg shadow-black/10">
+        <div className="lg:hidden">
           <MobileNav />
         </div>
-
         {/* Main content with improved spacing and typography */}
         <main
-          className="flex-1 relative"
+          className="flex-1 relative pt-16 lg:pt-0"
           role="main"
           aria-label="Dashboard Content"
         >
