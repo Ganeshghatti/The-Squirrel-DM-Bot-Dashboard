@@ -546,25 +546,26 @@ export default function Dashboard() {
                         </div>
 
                         {/* High Activity Conversations Card */}
+
                         <div className="group relative bg-neutral-900/60 backdrop-blur-3xl border border-neutral-700/30 rounded-2xl p-6 shadow-2xl shadow-black/20 hover:shadow-black/40 transition-all duration-300 hover:-translate-y-1 hover:border-neutral-600/50">
-                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-600/5 opacity-50 group-hover:opacity-70 transition-opacity duration-300" />
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-600/5 opacity-50 group-hover:opacity-70 transition-opacity duration-300" />
                           <div className="relative">
                             <div className="flex items-center justify-between mb-4">
-                              <div className="bg-red-500/20 text-red-400 p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
-                                <TrendingUp className="w-5 h-5" />
+                              <div className="bg-slate-500/20 text-slate-400 p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                                <AlertCircle className="w-5 h-5" />
                               </div>
                             </div>
                             <div className="mb-2">
                               <h4 className="text-sm font-medium text-neutral-400 mb-1">
-                                High Activity
+                                Empty Conversations
                               </h4>
                               <div className="text-3xl font-bold text-white tracking-tight">
-                                {analyticsData.highActivityConversations?.toLocaleString() ||
+                                {analyticsData.emptyConversations?.toLocaleString() ||
                                   "0"}
                               </div>
                             </div>
                             <p className="text-xs text-neutral-500 leading-relaxed">
-                              Conversations with 10+ messages
+                              No messages exchanged yet
                             </p>
                           </div>
                         </div>
@@ -579,26 +580,26 @@ export default function Dashboard() {
                         Activity Distribution
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {/* Medium Activity Card */}
+                        {/* Inactive Conversations Card */}
                         <div className="group relative bg-neutral-900/60 backdrop-blur-3xl border border-neutral-700/30 rounded-2xl p-6 shadow-2xl shadow-black/20 hover:shadow-black/40 transition-all duration-300 hover:-translate-y-1 hover:border-neutral-600/50">
-                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/5 opacity-50 group-hover:opacity-70 transition-opacity duration-300" />
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-rose-500/20 to-rose-600/5 opacity-50 group-hover:opacity-70 transition-opacity duration-300" />
                           <div className="relative">
                             <div className="flex items-center justify-between mb-4">
-                              <div className="bg-yellow-500/20 text-yellow-400 p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
-                                <BarChart3 className="w-5 h-5" />
+                              <div className="bg-rose-500/20 text-rose-400 p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                                <Clock className="w-5 h-5" />
                               </div>
                             </div>
                             <div className="mb-2">
                               <h4 className="text-sm font-medium text-neutral-400 mb-1">
-                                Medium Activity
+                                Inactive
                               </h4>
                               <div className="text-3xl font-bold text-white tracking-tight">
-                                {analyticsData.mediumActivityConversations?.toLocaleString() ||
+                                {analyticsData.inactiveConversations?.toLocaleString() ||
                                   "0"}
                               </div>
                             </div>
                             <p className="text-xs text-neutral-500 leading-relaxed">
-                              3-9 messages per conversation
+                              Conversations marked inactive
                             </p>
                           </div>
                         </div>
@@ -627,50 +628,51 @@ export default function Dashboard() {
                           </div>
                         </div>
 
-                        {/* Empty Conversations Card */}
+                        {/* Medium Activity Card */}
                         <div className="group relative bg-neutral-900/60 backdrop-blur-3xl border border-neutral-700/30 rounded-2xl p-6 shadow-2xl shadow-black/20 hover:shadow-black/40 transition-all duration-300 hover:-translate-y-1 hover:border-neutral-600/50">
-                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-600/5 opacity-50 group-hover:opacity-70 transition-opacity duration-300" />
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/5 opacity-50 group-hover:opacity-70 transition-opacity duration-300" />
                           <div className="relative">
                             <div className="flex items-center justify-between mb-4">
-                              <div className="bg-slate-500/20 text-slate-400 p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
-                                <AlertCircle className="w-5 h-5" />
+                              <div className="bg-yellow-500/20 text-yellow-400 p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                                <BarChart3 className="w-5 h-5" />
                               </div>
                             </div>
                             <div className="mb-2">
                               <h4 className="text-sm font-medium text-neutral-400 mb-1">
-                                Empty Conversations
+                                Medium Activity
                               </h4>
                               <div className="text-3xl font-bold text-white tracking-tight">
-                                {analyticsData.emptyConversations?.toLocaleString() ||
+                                {analyticsData.mediumActivityConversations?.toLocaleString() ||
                                   "0"}
                               </div>
                             </div>
                             <p className="text-xs text-neutral-500 leading-relaxed">
-                              No messages exchanged yet
+                              3-9 messages per conversation
                             </p>
                           </div>
                         </div>
 
-                        {/* Inactive Conversations Card */}
+                        {/* High Activity Card */}
+
                         <div className="group relative bg-neutral-900/60 backdrop-blur-3xl border border-neutral-700/30 rounded-2xl p-6 shadow-2xl shadow-black/20 hover:shadow-black/40 transition-all duration-300 hover:-translate-y-1 hover:border-neutral-600/50">
-                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-rose-500/20 to-rose-600/5 opacity-50 group-hover:opacity-70 transition-opacity duration-300" />
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-600/5 opacity-50 group-hover:opacity-70 transition-opacity duration-300" />
                           <div className="relative">
                             <div className="flex items-center justify-between mb-4">
-                              <div className="bg-rose-500/20 text-rose-400 p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
-                                <Clock className="w-5 h-5" />
+                              <div className="bg-red-500/20 text-red-400 p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                                <TrendingUp className="w-5 h-5" />
                               </div>
                             </div>
                             <div className="mb-2">
                               <h4 className="text-sm font-medium text-neutral-400 mb-1">
-                                Inactive
+                                High Activity
                               </h4>
                               <div className="text-3xl font-bold text-white tracking-tight">
-                                {analyticsData.inactiveConversations?.toLocaleString() ||
+                                {analyticsData.highActivityConversations?.toLocaleString() ||
                                   "0"}
                               </div>
                             </div>
                             <p className="text-xs text-neutral-500 leading-relaxed">
-                              Conversations marked inactive
+                              Conversations with 10+ messages
                             </p>
                           </div>
                         </div>
