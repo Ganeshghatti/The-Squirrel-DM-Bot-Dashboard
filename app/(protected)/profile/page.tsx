@@ -32,6 +32,7 @@ interface FAQ {
 }
 
 interface Company {
+  _id: string;
   company_id: string;
   company_instagram_id: string;
   instagram_profile?: string;
@@ -45,6 +46,7 @@ interface Company {
   Conversation_Flow: string;
   FAQ: FAQ[];
   keywords: string[];
+  isBotActive: boolean;
 }
 
 export default function CompanyProfile() {
@@ -57,6 +59,7 @@ export default function CompanyProfile() {
   const [error, setError] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isUpdatingBotStatus, setIsUpdatingBotStatus] = useState(false);
 
   const handleSidebarToggle = (collapsed: boolean) => {
     setIsTransitioning(true);
@@ -101,6 +104,40 @@ export default function CompanyProfile() {
 
     fetchCompany();
   }, [token, router, hasHydrated]);
+
+  const updateBotStatus = async (newStatus: boolean) => {
+    if (!company || !token) return;
+
+    setIsUpdatingBotStatus(true);
+    try {
+      const res = await fetch(`/api/company/${company._id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isBotActive: newStatus }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update bot status");
+      }
+
+      const data = await res.json();
+
+      // Update local state
+      setCompany((prev) => (prev ? { ...prev, isBotActive: newStatus } : null));
+      toast.success(
+        `Bot ${newStatus ? "activated" : "deactivated"} successfully`
+      );
+    } catch (err) {
+      toast.error("Failed to update bot status");
+      console.error("Error updating bot status:", err);
+    } finally {
+      setIsUpdatingBotStatus(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 relative overflow-hidden">
@@ -415,15 +452,48 @@ export default function CompanyProfile() {
                 transition={{ duration: 0.6, delay: 0.3 }}
                 className="bg-neutral-900/40 backdrop-blur-2xl border border-neutral-800/30 rounded-3xl p-8 shadow-2xl shadow-black/20 hover:shadow-black/30 transition-all duration-500"
               >
-                <div className="flex items-center space-x-3 mb-8">
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-xl flex items-center justify-center">
-                    <MessageSquare className="w-5 h-5 text-green-400" />
+                {" "}
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-xl flex items-center justify-center">
+                      <MessageSquare className="w-5 h-5 text-green-400" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-white tracking-tight">
+                      Bot Configuration
+                    </h2>
                   </div>
-                  <h2 className="text-xl font-semibold text-white tracking-tight">
-                    Bot Configuration
-                  </h2>
-                </div>
 
+                  {/* Bot Status Toggle */}
+                  <div className="flex items-center space-x-3">
+                    <span
+                      className={cn(
+                        "text-sm font-medium transition-colors",
+                        company?.isBotActive
+                          ? "text-green-400"
+                          : "text-neutral-400"
+                      )}
+                    >
+                      {company?.isBotActive ? "Active" : "Inactive"}
+                    </span>
+                    <button
+                      onClick={() => updateBotStatus(!company?.isBotActive)}
+                      disabled={isUpdatingBotStatus}
+                      className={cn(
+                        "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed",
+                        company?.isBotActive ? "bg-green-600" : "bg-neutral-600"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                          company?.isBotActive
+                            ? "translate-x-6"
+                            : "translate-x-1"
+                        )}
+                      />
+                    </button>
+                  </div>
+                </div>
                 <div className="space-y-6">
                   {/* Bot Identity */}
                   <div className="group">

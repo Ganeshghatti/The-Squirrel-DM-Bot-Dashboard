@@ -70,11 +70,18 @@ export function Sidebar({
       {/* Glass morphism container */}
       <div className="h-full bg-neutral-900/40 backdrop-blur-2xl border-r border-neutral-800/30">
         {/* Header */}
-        <div className="flex h-16 items-center border-b border-neutral-800/30 px-4">
+        <div className="flex h-16 items-center  px-4">
           <Link href="/" className="flex items-center gap-3 overflow-hidden">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl">
               {/* Replace with Sparkles icon or keep your logo */}
-              <Sparkles className="h-6 w-6 text-white" />
+              <Image
+                src={"/images/logo.png"}
+                quality={100}
+                width={48}
+                height={48}
+                alt="Logo"
+                className="h-8 w-10 sm:h-10 sm:w-12"
+              />
             </div>
             <span
               className={cn(

@@ -108,6 +108,8 @@ export default function ProductDetails() {
   const [textInput, setTextInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [savedProductDetails, setSavedProductDetails] = useState<any[]>([]);
+  const [loadingProductDetails, setLoadingProductDetails] = useState(false);
 
   const handleSidebarToggle = (collapsed: boolean) => {
     setIsTransitioning(true);
@@ -144,9 +146,41 @@ export default function ProductDetails() {
         router.push("/login");
       }
     };
-
     fetchUser();
   }, [token, router, hasHydrated]);
+
+  // Fetch saved product details
+  const fetchProductDetails = async () => {
+    if (!user?.company_instagram_id) return;
+
+    setLoadingProductDetails(true);
+    try {
+      const response = await fetch(
+        `/api/product-details?company_instagram_id=${encodeURIComponent(
+          user.company_instagram_id
+        )}&limit=10&sortOrder=desc`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch product details");
+      }
+
+      const data = await response.json();
+      setSavedProductDetails(data.data || []);
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      toast.error("Failed to load saved product details");
+    } finally {
+      setLoadingProductDetails(false);
+    }
+  };
+
+  // Fetch product details when user is loaded
+  useEffect(() => {
+    if (user?.company_instagram_id) {
+      fetchProductDetails();
+    }
+  }, [user]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -209,21 +243,40 @@ export default function ProductDetails() {
       }
     });
   };
-
   const sendTextToWebhook = async () => {
     if (!textInput.trim()) {
       toast.error("Please enter some text content");
       return;
     }
 
-    if (!user?._id) {
-      toast.error("User not authenticated");
+    if (!user?.company_instagram_id) {
+      toast.error("User not authenticated or missing Instagram ID");
       return;
     }
 
     setIsSending(true);
     try {
-      const response = await fetch(
+      // First, save to our database
+      const saveResponse = await fetch("/api/product-details", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          company_instagram_id: user.company_instagram_id,
+          text_content: textInput.trim(),
+        }),
+      });
+
+      if (!saveResponse.ok) {
+        const errorData = await saveResponse.json();
+        throw new Error(errorData.error || "Failed to save product details");
+      }
+
+      const savedData = await saveResponse.json();
+
+      // Then send to webhook
+      const webhookResponse = await fetch(
         "https://n8n.srv833013.hstgr.cloud/webhook/db8862e2-a3f1-4bfc-b18d-37279febf0a2",
         {
           method: "POST",
@@ -233,19 +286,23 @@ export default function ProductDetails() {
           body: JSON.stringify({
             text: textInput,
             company_id: user._id,
+            company_instagram_id: user.company_instagram_id,
+            product_details_id: savedData.data.id,
           }),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to send data to webhook");
+      if (!webhookResponse.ok) {
+        console.warn("Webhook failed, but data was saved successfully");
       }
-
-      toast.success("Content sent successfully!");
+      toast.success("Product details saved and sent successfully!");
       setTextInput(""); // Clear the textarea after successful send
-    } catch (error) {
-      console.error("Error sending data to webhook:", error);
-      toast.error("Failed to send content. Please try again.");
+      fetchProductDetails(); // Refresh the list
+    } catch (error: any) {
+      console.error("Error processing product details:", error);
+      toast.error(
+        error.message || "Failed to process content. Please try again."
+      );
     } finally {
       setIsSending(false);
     }
@@ -460,8 +517,96 @@ export default function ProductDetails() {
                   >
                     <Zap className="w-4 h-4 mr-2" />
                     {isSending ? "Sending..." : "Add Text Content"}
+                  </Button>{" "}
+                </div>
+              </motion.div>
+
+              {/* Saved Product Details Section */}
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.4 }}
+                className="bg-neutral-900/40 backdrop-blur-3xl border border-neutral-800/30 rounded-3xl p-8 shadow-2xl shadow-black/25"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-gradient-to-r from-purple-500/20 to-purple-600/20 rounded-xl border border-purple-500/30">
+                      <Database className="w-5 h-5 text-purple-400" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-white">
+                      Saved Product Details
+                    </h2>
+                  </div>
+                  <Button
+                    onClick={fetchProductDetails}
+                    variant="outline"
+                    size="sm"
+                    className="border-neutral-700 text-neutral-400 hover:text-white hover:border-neutral-600"
+                    disabled={loadingProductDetails}
+                  >
+                    {loadingProductDetails ? (
+                      <Clock className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Search className="w-4 h-4" />
+                    )}
                   </Button>
                 </div>
+
+                {loadingProductDetails ? (
+                  <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="bg-neutral-800/30 rounded-xl p-4">
+                        <Skeleton className="h-4 w-3/4 mb-2 bg-neutral-700/50" />
+                        <Skeleton className="h-3 w-1/2 bg-neutral-700/50" />
+                      </div>
+                    ))}
+                  </div>
+                ) : savedProductDetails.length > 0 ? (
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {savedProductDetails.map((detail, index) => (
+                      <div
+                        key={detail._id}
+                        className="bg-neutral-800/30 border border-neutral-700/30 rounded-xl p-4 hover:bg-neutral-800/40 transition-colors"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <BookOpen className="w-4 h-4 text-blue-400" />
+                            <span className="text-sm text-neutral-400">
+                              Entry #{savedProductDetails.length - index}
+                            </span>
+                          </div>
+                          <span className="text-xs text-neutral-500">
+                            {new Date(detail.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <p className="text-white text-sm leading-relaxed line-clamp-3">
+                          {detail.text_content}
+                        </p>
+                        <div className="mt-3 flex items-center space-x-2">
+                          <Button
+                            onClick={() => setTextInput(detail.text_content)}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs border-emerald-600/30 text-emerald-400 hover:bg-emerald-600/10"
+                          >
+                            <Eye className="w-3 h-3 mr-1" />
+                            Load
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <MessageSquare className="w-12 h-12 text-neutral-600 mx-auto mb-3" />
+                    <p className="text-neutral-500">
+                      No product details saved yet
+                    </p>
+                    <p className="text-neutral-600 text-sm">
+                      Add some content above to get started
+                    </p>
+                  </div>
+                )}
               </motion.div>
             </div>
 

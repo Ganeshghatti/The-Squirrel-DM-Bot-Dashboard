@@ -124,6 +124,7 @@ export async function PUT(request: NextRequest) {
       Back_context: body.Back_context,
       Role: body.Role,
       Conversation_Flow: body.Conversation_Flow,
+      isBotActive: body.isBotActive,
     };
 
     const updatedCompany = await Company.findByIdAndUpdate(

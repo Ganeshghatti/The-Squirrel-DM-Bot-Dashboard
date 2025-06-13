@@ -15,6 +15,11 @@ const UserSchema = new mongoose.Schema(
     phone: { type: String },
     keywords: { type: [String], default: [] },
     terms: { type: Boolean, default: false },
+    onboardingStatus: {
+      type: String,
+      enum: ["not verified", "verified", "onboarded"],
+      default: "not verified",
+    },
   },
   { timestamps: true }
 );

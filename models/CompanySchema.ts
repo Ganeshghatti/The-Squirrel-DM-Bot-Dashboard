@@ -28,6 +28,12 @@ const CompanySchema = new mongoose.Schema(
     Role: { type: String, required: true },
     Conversation_Flow: { type: String, required: true },
     isBotActive: { type: Boolean, default: true },
+    timezone: {
+      type: String,
+      default: "IST",
+      immutable: true,
+      required: true,
+    },
   },
   { timestamps: true }
 );
