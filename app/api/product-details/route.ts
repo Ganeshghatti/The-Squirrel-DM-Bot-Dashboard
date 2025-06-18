@@ -48,9 +48,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { company_instagram_id, text_content } = body;
-
-    // Check if company exists
+    const { company_instagram_id, text_content } = body; // Check if company exists
     const company = await Company.findOne({ company_instagram_id });
     if (!company) {
       return NextResponse.json(
@@ -62,28 +60,64 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create new product details
-    const productDetails = new ProductDetails({
+    // Check if product details already exist for this company
+    const existingProductDetails = await ProductDetails.findOne({
       company_instagram_id: company_instagram_id.trim(),
-      text_content: text_content.trim(),
     });
 
-    const savedProductDetails = await productDetails.save();
+    let savedProductDetails;
+    if (existingProductDetails) {
+      // Replace existing text content with new content
+      const newTextContent = text_content.trim();
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Product details created successfully",
-        data: {
-          id: savedProductDetails._id,
-          company_instagram_id: savedProductDetails.company_instagram_id,
-          text_content: savedProductDetails.text_content,
-          createdAt: savedProductDetails.createdAt,
-          updatedAt: savedProductDetails.updatedAt,
+      // Update existing document with new content (replacing old content)
+      savedProductDetails = await ProductDetails.findByIdAndUpdate(
+        existingProductDetails._id,
+        {
+          text_content: newTextContent,
+          updatedAt: new Date(),
         },
-      },
-      { status: 201 }
-    );
+        { new: true }
+      );
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Product details updated successfully (content replaced)",
+          data: {
+            id: savedProductDetails._id,
+            company_instagram_id: savedProductDetails.company_instagram_id,
+            text_content: savedProductDetails.text_content,
+            createdAt: savedProductDetails.createdAt,
+            updatedAt: savedProductDetails.updatedAt,
+          },
+        },
+        { status: 200 }
+      );
+    } else {
+      // Create new product details document
+      const productDetails = new ProductDetails({
+        company_instagram_id: company_instagram_id.trim(),
+        text_content: text_content.trim(),
+      });
+
+      savedProductDetails = await productDetails.save();
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Product details created successfully",
+          data: {
+            id: savedProductDetails._id,
+            company_instagram_id: savedProductDetails.company_instagram_id,
+            text_content: savedProductDetails.text_content,
+            createdAt: savedProductDetails.createdAt,
+            updatedAt: savedProductDetails.updatedAt,
+          },
+        },
+        { status: 201 }
+      );
+    }
   } catch (error: any) {
     console.error("Error creating product details:", error);
 

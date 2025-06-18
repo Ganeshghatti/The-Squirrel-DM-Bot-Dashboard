@@ -148,7 +148,6 @@ export default function ProductDetails() {
     };
     fetchUser();
   }, [token, router, hasHydrated]);
-
   // Fetch saved product details
   const fetchProductDetails = async () => {
     if (!user?.company_instagram_id) return;
@@ -167,6 +166,11 @@ export default function ProductDetails() {
 
       const data = await response.json();
       setSavedProductDetails(data.data || []);
+
+      // Auto-load the most recent content into textarea if it exists and textarea is empty
+      if (data.data && data.data.length > 0 && !textInput.trim()) {
+        setTextInput(data.data[0].text_content);
+      }
     } catch (error) {
       console.error("Error fetching product details:", error);
       toast.error("Failed to load saved product details");
@@ -295,8 +299,8 @@ export default function ProductDetails() {
       if (!webhookResponse.ok) {
         console.warn("Webhook failed, but data was saved successfully");
       }
-      toast.success("Product details saved and sent successfully!");
-      setTextInput(""); // Clear the textarea after successful send
+      toast.success("Product details saved successfully! Content updated.");
+      // Don't clear the textarea - keep showing the current content
       fetchProductDetails(); // Refresh the list
     } catch (error: any) {
       console.error("Error processing product details:", error);
@@ -504,8 +508,13 @@ export default function ProductDetails() {
 
                 {/* Text Input Section */}
                 <div className="mt-6">
+                  {" "}
                   <Textarea
-                    placeholder="Enter product descriptions, FAQs, or any relevant information..."
+                    placeholder={
+                      savedProductDetails.length > 0
+                        ? "Edit your current product details or add new content..."
+                        : "Enter product descriptions, FAQs, or any relevant information..."
+                    }
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
                     className="bg-neutral-800/50 border-neutral-700/50 text-white placeholder-neutral-500 focus:border-emerald-500/50 focus:ring-emerald-500/20 rounded-xl min-h-32 resize-none"
@@ -516,7 +525,11 @@ export default function ProductDetails() {
                     disabled={!textInput.trim() || isSending}
                   >
                     <Zap className="w-4 h-4 mr-2" />
-                    {isSending ? "Sending..." : "Add Text Content"}
+                    {isSending
+                      ? "Saving..."
+                      : savedProductDetails.length > 0
+                      ? "Update Content"
+                      : "Add Content"}
                   </Button>{" "}
                 </div>
               </motion.div>

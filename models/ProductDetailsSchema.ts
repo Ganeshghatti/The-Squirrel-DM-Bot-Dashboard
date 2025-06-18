@@ -6,6 +6,7 @@ const ProductDetailsSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      unique: true, // Ensure only one document per company
       index: true,
     },
     text_content: {
