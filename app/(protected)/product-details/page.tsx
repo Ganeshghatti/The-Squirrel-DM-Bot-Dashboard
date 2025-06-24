@@ -289,7 +289,7 @@ export default function ProductDetails() {
           },
           body: JSON.stringify({
             text: textInput,
-            company_id: user._id,
+            company_id: user.company_id,
             company_instagram_id: user.company_instagram_id,
             product_details_id: savedData.data.id,
           }),
