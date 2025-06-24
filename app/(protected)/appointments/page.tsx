@@ -851,8 +851,7 @@ export default function Appointments() {
                                 <div className="flex items-center space-x-2">
                                   <Clock className="w-4 h-4 text-neutral-500 flex-shrink-0" />
                                   <span className="text-sm text-neutral-300">
-                                    {formatTime(appointment.startTime)} -{" "}
-                                    {formatTime(appointment.endTime)}
+                                    {formatTime(appointment.startTime)}
                                   </span>
                                 </div>
                               </div>
