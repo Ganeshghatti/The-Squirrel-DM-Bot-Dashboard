@@ -27,8 +27,7 @@ const AppointmentSchema = new mongoose.Schema({
     required: true,
   },
   endTime: {
-    type: Date,
-    required: true,
+    type: Date
   },
   service: {
     type: String,
