@@ -22,7 +22,6 @@ export async function POST(request: Request) {
       "phone",
       "date",
       "startTime",
-      "endTime",
       "service",
       "user_instagram_id",
       "company_instagram_id",
@@ -39,7 +38,6 @@ export async function POST(request: Request) {
     // Validate date and time formats
     const date = new Date(body.date);
     const startTime = new Date(body.startTime);
-    const endTime = new Date(body.endTime);
 
     if (isNaN(date.getTime())) {
       return NextResponse.json(
@@ -48,20 +46,20 @@ export async function POST(request: Request) {
       );
     }
 
-    if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+    if (isNaN(startTime.getTime())) {
       return NextResponse.json(
         { error: "Invalid time format" },
         { status: 400 }
       );
     }
 
-    // Validate that end time is after start time
-    if (endTime <= startTime) {
-      return NextResponse.json(
-        { error: "End time must be after start time" },
-        { status: 400 }
-      );
-    }
+    // // Validate that end time is after start time
+    // if (endTime <= startTime) {
+    //   return NextResponse.json(
+    //     { error: "End time must be after start time" },
+    //     { status: 400 }
+    //   );
+    // }
 
     // Validate email format if provided
     if (body.email) {
