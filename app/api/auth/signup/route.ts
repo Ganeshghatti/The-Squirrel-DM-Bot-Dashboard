@@ -92,17 +92,13 @@ export async function POST(request: Request) {
       email: email.toLowerCase(),
       password: hashedPassword,
       company_id: generateCompanyId(name),
-      company_instagram_id: companyInstagramId,
-      instagram_profile: `https://instagram.com/${companyInstagramId}`, // Now set as Instagram profile URL
       FAQ: [],
       bot_identity: `You're ${founderName}, Founder of ${companyName}, which is an AI automation agency.`,
       Back_context: `${founderName} is the founder of ${companyName}, a tech company that builds smart AI automations to help businesses save time and grow faster. They recently automated their own Instagram DMs and now help others do the same. ${founderName} offers a free discovery call to business owners interested in Instagram automation or other business automations. People often DM the word “Automation” to learn more. Your job is to start a warm conversation, ask a couple of quick questions to see if they’re a good fit, collect their name and email.`,
       Role: `When someone messages “Automation,” thank them, introduce ${founderName} briefly, and ask if they’re up for a quick chat before getting more info. Then ask 2 simple questions (one at a time), collect name + email, trigger the lead capture automation.`,
       Conversation_Flow: `User messages “Automation”\n Thank them for reaching out\n Introduce ${founderName} and ${companyName}\n Ask: “Are you open to a quick chat before I send you more info?”\n\nIf yes:\nQuestion 1: “Are you looking for Instagram automation for your business?”\nQuestion 2: “Do you want help with any other automations in your business (like lead capture, WhatsApp flows, AI replies, etc.)?”\n Ask for their first name\n Ask for their email\n Trigger Google Sheets capture\n\nIf not interested:\nPolitely thank them and let them know they can always reach out later if they’re curious about automation.`,
       isBotActive: true,
-      keywords: ["automation", "ai", "automate"],
-      access_token:
-        "IGAAJZCDeZCjlzFBZAE1TT1BZASTNPQzI4WkRzMW9wZAG94ZAkdFTVN0UlhxSmEtMUVZAYV95cTRCTDlWUFlXT0JaYXhsanBsNEVDNHNhY3FuQzVVaTZAudzNzX3otektteHpoMjAzZAFFuR2p2d0d4NncxMU81NkNNbFVzeWEwUWRibDB0QQZDZD",
+      keywords: ["automation", "ai", "automate"]
     });
     await newCompany.save();
 

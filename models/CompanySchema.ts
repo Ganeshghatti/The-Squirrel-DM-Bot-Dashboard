@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const CompanySchema = new mongoose.Schema(
   {
     company_id: { type: String, required: true, unique: true },
-    company_instagram_id: { type: String, required: true, unique: true },
+    company_instagram_id: { type: String, unique: true },
     instagram_profile: { type: String },
     phone: { type: String },
     email: {
