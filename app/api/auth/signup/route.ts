@@ -45,6 +45,7 @@ export async function POST(request: Request) {
       const namePart = name.replace(/\s+/g, "").toLowerCase().slice(0, 5);
       const randomNum = Math.floor(100000 + Math.random() * 900000);
       return `${namePart}_${randomNum}`;
+      console.log(`Generated company ID: ${namePart}_${randomNum}`);
     }
 
     // Generate a random founder name
@@ -91,6 +92,7 @@ export async function POST(request: Request) {
       phone,
       email: email.toLowerCase(),
       password: hashedPassword,
+      company_instagram_id: companyInstagramId,
       company_id: generateCompanyId(name),
       FAQ: [],
       bot_identity: `You're ${founderName}, Founder of ${companyName}, which is an AI automation agency.`,
@@ -98,8 +100,9 @@ export async function POST(request: Request) {
       Role: `When someone messages “Automation,” thank them, introduce ${founderName} briefly, and ask if they’re up for a quick chat before getting more info. Then ask 2 simple questions (one at a time), collect name + email, trigger the lead capture automation.`,
       Conversation_Flow: `User messages “Automation”\n Thank them for reaching out\n Introduce ${founderName} and ${companyName}\n Ask: “Are you open to a quick chat before I send you more info?”\n\nIf yes:\nQuestion 1: “Are you looking for Instagram automation for your business?”\nQuestion 2: “Do you want help with any other automations in your business (like lead capture, WhatsApp flows, AI replies, etc.)?”\n Ask for their first name\n Ask for their email\n Trigger Google Sheets capture\n\nIf not interested:\nPolitely thank them and let them know they can always reach out later if they’re curious about automation.`,
       isBotActive: true,
-      keywords: ["automation", "ai", "automate"]
+      keywords: ["automation", "ai", "automate"],
     });
+
     await newCompany.save();
 
     // Send registration email notification
