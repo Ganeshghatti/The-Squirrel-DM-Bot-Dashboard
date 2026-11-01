@@ -30,6 +30,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   title: "Instagram Bot Dashboard",
   description: "Monitor and manage your Instagram DM automation bot",
 };
